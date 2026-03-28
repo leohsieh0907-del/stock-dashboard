@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>📊 股市儀表板 2026/03/29 00:24</title>
+<title>📊 股市儀表板 2026/03/29 00:40</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -275,9 +275,9 @@ const OPT_DATA   = [{"ticker": "NVDA", "call": 72950, "put": 46555, "pc": 0.64},
 const TW_LIST    = [{"code": "2303", "name": "聯電", "close": 57.8, "chg": -0.4, "pct": -0.69, "vol": 41614, "fi": -9055, "trust": 968, "dealer": 1365, "total": -6722}, {"code": "2308", "name": "台達電", "close": 1510.0, "chg": -5.0, "pct": -0.33, "vol": 10527, "fi": -2274, "trust": 281, "dealer": 79, "total": -1914}, {"code": "2317", "name": "鴻海", "close": 199.5, "chg": -1.0, "pct": -0.5, "vol": 29525, "fi": -3214, "trust": 326, "dealer": 398, "total": -2490}, {"code": "2330", "name": "台積電", "close": 1820.0, "chg": -20.0, "pct": -1.09, "vol": 33883, "fi": -11136, "trust": 381, "dealer": 515, "total": -10240}, {"code": "2360", "name": "致茂", "close": 1615.0, "chg": -25.0, "pct": -1.52, "vol": 3636, "fi": -410, "trust": 188, "dealer": 26, "total": -196}, {"code": "2382", "name": "廣達", "close": 289.0, "chg": 2.0, "pct": 0.7, "vol": 13285, "fi": 305, "trust": 67, "dealer": 183, "total": 555}, {"code": "2408", "name": "南亞科", "close": 219.5, "chg": -6.0, "pct": -2.66, "vol": 133271, "fi": -3950, "trust": -7434, "dealer": 1241, "total": -10143}, {"code": "2449", "name": "京元電子", "close": 278.5, "chg": -9.5, "pct": -3.3, "vol": 18800, "fi": -2769, "trust": -1955, "dealer": 276, "total": -4448}, {"code": "2454", "name": "聯發科", "close": 1585.0, "chg": -5.0, "pct": -0.31, "vol": 7673, "fi": 545, "trust": -785, "dealer": 134, "total": -106}, {"code": "3010", "name": "華立", "close": 123.0, "chg": -1.5, "pct": -1.2, "vol": 744, "fi": -59, "trust": -3, "dealer": -4, "total": -66}, {"code": "3017", "name": "奇鋐", "close": 2195.0, "chg": -80.0, "pct": -3.52, "vol": 5491, "fi": -1475, "trust": 151, "dealer": -11, "total": -1335}, {"code": "3030", "name": "德律", "close": 260.0, "chg": 7.0, "pct": 2.77, "vol": 3568, "fi": -8, "trust": -3, "dealer": 89, "total": 78}, {"code": "3034", "name": "聯詠", "close": 399.0, "chg": 7.0, "pct": 1.79, "vol": 9730, "fi": 2849, "trust": -33, "dealer": 198, "total": 3014}, {"code": "3037", "name": "欣興", "close": 505.0, "chg": 3.0, "pct": 0.6, "vol": 5779, "fi": -1315, "trust": 174, "dealer": 175, "total": -966}, {"code": "3045", "name": "台灣大", "close": 109.5, "chg": 0.5, "pct": 0.46, "vol": 4957, "fi": 2250, "trust": -92, "dealer": 289, "total": 2447}, {"code": "3231", "name": "緯創", "close": 127.0, "chg": 0.0, "pct": 0.0, "vol": 17630, "fi": -1713, "trust": 4, "dealer": 494, "total": -1215}, {"code": "3305", "name": "昇貿", "close": 106.5, "chg": 3.5, "pct": 3.4, "vol": 2197, "fi": 118, "trust": 0, "dealer": 37, "total": 155}, {"code": "3413", "name": "京鼎", "close": 311.0, "chg": -0.5, "pct": -0.16, "vol": 1669, "fi": 423, "trust": -1, "dealer": -12, "total": 410}, {"code": "3583", "name": "辛耘", "close": 497.5, "chg": -3.5, "pct": -0.7, "vol": 3256, "fi": -41, "trust": 0, "dealer": 29, "total": -12}, {"code": "3661", "name": "世芯-KY", "close": 3040.0, "chg": -25.0, "pct": -0.82, "vol": 1588, "fi": -197, "trust": -53, "dealer": 2, "total": -248}, {"code": "3711", "name": "日月光投控", "close": 353.5, "chg": -5.5, "pct": -1.53, "vol": 17087, "fi": -3894, "trust": 65, "dealer": 185, "total": -3644}, {"code": "3715", "name": "定穎投控", "close": 203.5, "chg": 18.5, "pct": 10.0, "vol": 76656, "fi": 4259, "trust": 394, "dealer": 226, "total": 4879}, {"code": "4977", "name": "眾達-KY", "close": 200.0, "chg": 4.0, "pct": 2.04, "vol": 11468, "fi": -680, "trust": 0, "dealer": 32, "total": -648}, {"code": "5388", "name": "中磊", "close": 78.0, "chg": 2.8, "pct": 3.72, "vol": 3538, "fi": 648, "trust": -2, "dealer": 8, "total": 654}, {"code": "5434", "name": "崇越", "close": 318.5, "chg": -0.5, "pct": -0.16, "vol": 452, "fi": -35, "trust": -148, "dealer": -7, "total": -190}, {"code": "6415", "name": "矽力*-KY", "close": 293.0, "chg": -3.0, "pct": -1.01, "vol": 4455, "fi": -677, "trust": 129, "dealer": 64, "total": -484}, {"code": "6438", "name": "迅得", "close": 177.5, "chg": 5.0, "pct": 2.9, "vol": 3757, "fi": 155, "trust": 37, "dealer": 80, "total": 272}, {"code": "6531", "name": "愛普*", "close": 507.0, "chg": -2.0, "pct": -0.39, "vol": 4059, "fi": -464, "trust": 45, "dealer": -55, "total": -474}, {"code": "6770", "name": "力積電", "close": 59.2, "chg": -3.6, "pct": -5.73, "vol": 222663, "fi": -16462, "trust": -6, "dealer": -512, "total": -16980}, {"code": "8046", "name": "南電", "close": 561.0, "chg": -8.0, "pct": -1.41, "vol": 25431, "fi": -2526, "trust": 1180, "dealer": -539, "total": -1885}, {"code": "1785", "name": "光洋科", "close": null, "chg": null, "pct": null, "vol": null, "fi": 2279, "trust": 0, "dealer": 268, "total": 2547}, {"code": "6223", "name": "旺矽", "close": null, "chg": null, "pct": null, "vol": null, "fi": -9, "trust": 26, "dealer": 0, "total": 17}, {"code": "6261", "name": "久元", "close": null, "chg": null, "pct": null, "vol": null, "fi": 125, "trust": 0, "dealer": 98, "total": 223}, {"code": "6510", "name": "精測", "close": null, "chg": null, "pct": null, "vol": null, "fi": 100, "trust": -12, "dealer": 6, "total": 94}];
 const TX_DATA    = [{"name": "外資", "long": 8029, "short": 47948}, {"name": "投信", "long": 43167, "short": 4998}, {"name": "自營商", "long": 4263, "short": 5207}];
 const MTX_DATA   = [{"name": "外資", "long": 2129, "short": 2521}, {"name": "投信", "long": 116, "short": 44}, {"name": "自營商", "long": 5225, "short": 6302}];
-const NEWS_DATA  = [{"cat": "🔬 半導體/AI", "title": "'Magnificent 7' stocks wipe more than $850 billion in value as stock market sell-off hits AI winners hard", "link": "https://finance.yahoo.com/news/magnificent-7-stocks-wipe-more-than-850-billion-in-value-as-stock-market-sell-off-hits-ai-winners-hard-213921360.html", "pub": "03/28 05:39", "src": "Yahoo Finance", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Streaming Wars: 1 Netflix Rival Dominating the Industry", "link": "https://www.fool.com/investing/2026/03/28/streaming-wars-netflix-rival-dominate-industry/", "pub": "03/29 00:05", "src": "Motley Fool", "note": ""}, {"cat": "🔬 半導體/AI", "title": "This Retail Giant Is Trading for Half the Price of Walmart and Nearly One-Third the Price of Costco, but Growing 3 Times as Fast", "link": "https://www.fool.com/investing/2026/03/28/this-retail-giant-is-trading-for-half-the-price-of/", "pub": "03/28 23:35", "src": "Motley Fool", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Why you should 'never count out' Google", "link": "https://finance.yahoo.com/video/why-you-should-never-count-out-google-215424047.html", "pub": "03/28 05:54", "src": "Yahoo Finance Video", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Xanadu IPO: CEO on AMD partnership, quantum computing, and more", "link": "https://finance.yahoo.com/video/xanadu-ipo-ceo-on-amd-partnership-quantum-computing-and-more-211825682.html", "pub": "03/28 05:18", "src": "Yahoo Finance Video", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Analyst Signals Caution Amid Demand Concerns For Advanced Micro Devices (AMD)", "link": "https://finance.yahoo.com/markets/stocks/articles/analyst-signals-caution-amid-demand-151852290.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Here’s What The New AI Chip Means For Arm Holdings (ARM)", "link": "https://finance.yahoo.com/sectors/technology/articles/ai-chip-means-arm-holdings-151854629.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Taiwan Semiconductor (TSM) Going Strong Amid Tight Capacity Conditions", "link": "https://finance.yahoo.com/sectors/technology/articles/taiwan-semiconductor-tsm-going-strong-151840195.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Musk’s Terafab plans seen having limited impact on TSMC", "link": "https://finance.yahoo.com/sectors/technology/articles/musk-terafab-plans-seen-having-151754710.html", "pub": "03/28 23:17", "src": "Investing.com", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Sizing Up Applied Materials (AMAT) Valuation After A Sharp Pullback And Strong One Year Return", "link": "https://finance.yahoo.com/markets/stocks/articles/sizing-applied-materials-amat-valuation-060628079.html", "pub": "03/28 14:06", "src": "Simply Wall St.", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Nvidia, AMD and Intel Lead Chip Stocks Sell-Off Amid Middle East Tension", "link": "https://finance.yahoo.com/sectors/technology/articles/nvidia-amd-intel-lead-chip-194439897.html", "pub": "03/28 03:44", "src": "GuruFocus.com", "note": ""}, {"cat": "🔬 半導體/AI", "title": "AMAT vs. ACMR: Which WFE Stock is the Better Buy Right Now?", "link": "https://finance.yahoo.com/markets/stocks/articles/amat-vs-acmr-wfe-stock-141100002.html", "pub": "03/27 22:11", "src": "Zacks", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Dow Jones Futures: Sell-Off Breaking Hearts As Oil Prices Hit $100 In Iran War; What To Do Now", "link": "https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-oil-prices-near-100-iran-war-drags-tesla-deliveries/?src=A00220&yptr=yahoo", "pub": "03/28 23:42", "src": "Investor's Business Daily", "note": ""}, {"cat": "🔬 半導體/AI", "title": "3 Artificial Intelligence (AI) Stocks to Buy at a Discount", "link": "https://www.fool.com/investing/2026/03/28/3-ai-stocks-to-buy-at-a-discount/", "pub": "03/28 20:35", "src": "Motley Fool", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Morgan Stanley sends clear message on semiconductor stocks after selloff", "link": "https://www.thestreet.com/investing/stocks/morgan-stanley-sends-clear-message-on-semiconductor-stocks-after-selloff-micron-mu", "pub": "03/28 10:33", "src": "TheStreet", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Broadcom (AVGO) Bags Another US Government Defense Deal", "link": "https://finance.yahoo.com/markets/stocks/articles/broadcom-avgo-bags-another-us-151842270.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "📈 大盤/總經", "title": "Anthropic eyes IPO, Microsoft stock set for worst quarter since 2008", "link": "https://finance.yahoo.com/video/anthropic-eyes-ipo-microsoft-stock-set-for-worst-quarter-since-2008-172856931.html", "pub": "03/28 01:28", "src": "Yahoo Finance Video", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Shopify (SHOP) Adds Another AI Integration Successfully", "link": "https://finance.yahoo.com/sectors/technology/articles/shopify-shop-adds-another-ai-151849403.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "📈 大盤/總經", "title": "Meta, social media stocks continue slide Friday amid fallout from lawsuit losses", "link": "https://finance.yahoo.com/markets/article/meta-social-media-stocks-continue-slide-friday-amid-fallout-from-lawsuit-losses-182821052.html", "pub": "03/27 02:28", "src": "Yahoo Finance", "note": ""}, {"cat": "📈 大盤/總經", "title": "Leaked Meta memo reveals company’s bizarre plan after layoffs", "link": "https://www.thestreet.com/technology/leaked-meta-memo-reveals-companys-bizarre-plan-after-layoffs", "pub": "03/29 00:03", "src": "TheStreet", "note": ""}, {"cat": "📈 大盤/總經", "title": "Dow sheds nearly 800 points, stocks sink as volatility spikes higher", "link": "https://finance.yahoo.com/video/dow-sheds-nearly-800-points-stocks-sink-as-volatility-spikes-higher-204806451.html", "pub": "03/28 04:48", "src": "Yahoo Finance Video", "note": ""}, {"cat": "📈 大盤/總經", "title": "Vanguard’s VCR ETF Carries 40% Amazon and Tesla Exposure Dressed as Consumer Discretionary", "link": "https://247wallst.com/investing/2026/03/28/vanguards-vcr-etf-carries-40-amazon-and-tesla-exposure-dressed-as-consumer-discretionary/", "pub": "03/28 21:30", "src": "24/7 Wall St.", "note": ""}, {"cat": "🔬 半導體/AI", "title": "AI schism grips Washington as tech, labor vie for upper hand", "link": "https://finance.yahoo.com/economy/policy/articles/ai-schism-grips-washington-tech-130000063.html", "pub": "03/28 21:00", "src": "Bloomberg", "note": ""}, {"cat": "📈 大盤/總經", "title": "SPY Has Returned 217% Over 10 Years, But Its Top 3 Holdings Now Control the Outcome", "link": "https://247wallst.com/investing/2026/03/28/spy-has-returned-217-over-10-years-but-its-top-3-holdings-now-control-the-outcome/", "pub": "03/28 23:00", "src": "24/7 Wall St.", "note": ""}, {"cat": "📈 大盤/總經", "title": "RSPA’s 8.9% Yield Hides a Tax Problem Most Income Investors Never See Coming", "link": "https://247wallst.com/investing/2026/03/28/rspas-8-9-yield-hides-a-tax-problem-most-income-investors-never-see-coming/", "pub": "03/28 18:48", "src": "24/7 Wall St.", "note": ""}, {"cat": "📈 大盤/總經", "title": "OEF Returned 314.83% Over 10 Years While SPY Managed 223.37%", "link": "https://247wallst.com/investing/2026/03/27/oef-returned-314-83-over-10-years-while-spy-managed-223-37/", "pub": "03/27 23:15", "src": "24/7 Wall St.", "note": ""}, {"cat": "🇹🇼 台股", "title": "AI 創新應用大樓啟用 將串聯南科創造2.2兆元年產值、3.5萬就業機會", "link": "https://money.udn.com/money/story/5612/9408987", "pub": "03/28 19:21", "src": "經濟日報", "note": ""}, {"cat": "🇹🇼 台股", "title": "高雄第三園區聯外交通整體工程動土 卓揆：打造南部 AI 智慧城市", "link": "https://money.udn.com/money/story/5612/9408592", "pub": "03/28 13:36", "src": "經濟日報", "note": ""}, {"cat": "🇹🇼 台股", "title": "機票要變貴！油價上漲 國籍航空醞釀4月調高燃油附加費", "link": "https://money.udn.com/money/story/5612/9408466", "pub": "03/28 12:11", "src": "經濟日報", "note": ""}, {"cat": "🇹🇼 台股", "title": "美股挫台指期夜盤跌882點 法人：台股下週恐有壓", "link": "https://money.udn.com/money/story/5612/9408349", "pub": "03/28 11:09", "src": "經濟日報", "note": ""}];
+const NEWS_DATA  = [{"cat": "🔬 半導體/AI", "title": "'Magnificent 7' stocks wipe more than $850 billion in value as stock market sell-off hits AI winners hard", "link": "https://finance.yahoo.com/news/magnificent-7-stocks-wipe-more-than-850-billion-in-value-as-stock-market-sell-off-hits-ai-winners-hard-213921360.html", "pub": "03/28 05:39", "src": "Yahoo Finance", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Progressive Had a Remarkable Run. Now Comes the Hard Part.", "link": "https://www.fool.com/investing/2026/03/28/progressive-had-a-remarkable-run-now-comes-the-har/", "pub": "03/29 00:25", "src": "Motley Fool", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Streaming Wars: 1 Netflix Rival Dominating the Industry", "link": "https://www.fool.com/investing/2026/03/28/streaming-wars-netflix-rival-dominate-industry/", "pub": "03/29 00:05", "src": "Motley Fool", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Why you should 'never count out' Google", "link": "https://finance.yahoo.com/video/why-you-should-never-count-out-google-215424047.html", "pub": "03/28 05:54", "src": "Yahoo Finance Video", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Xanadu IPO: CEO on AMD partnership, quantum computing, and more", "link": "https://finance.yahoo.com/video/xanadu-ipo-ceo-on-amd-partnership-quantum-computing-and-more-211825682.html", "pub": "03/28 05:18", "src": "Yahoo Finance Video", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Analyst Signals Caution Amid Demand Concerns For Advanced Micro Devices (AMD)", "link": "https://finance.yahoo.com/markets/stocks/articles/analyst-signals-caution-amid-demand-151852290.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Here’s What The New AI Chip Means For Arm Holdings (ARM)", "link": "https://finance.yahoo.com/sectors/technology/articles/ai-chip-means-arm-holdings-151854629.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Taiwan Semiconductor (TSM) Going Strong Amid Tight Capacity Conditions", "link": "https://finance.yahoo.com/sectors/technology/articles/taiwan-semiconductor-tsm-going-strong-151840195.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Musk’s Terafab plans seen having limited impact on TSMC", "link": "https://finance.yahoo.com/sectors/technology/articles/musk-terafab-plans-seen-having-151754710.html", "pub": "03/28 23:17", "src": "Investing.com", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Sizing Up Applied Materials (AMAT) Valuation After A Sharp Pullback And Strong One Year Return", "link": "https://finance.yahoo.com/markets/stocks/articles/sizing-applied-materials-amat-valuation-060628079.html", "pub": "03/28 14:06", "src": "Simply Wall St.", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Nvidia, AMD and Intel Lead Chip Stocks Sell-Off Amid Middle East Tension", "link": "https://finance.yahoo.com/sectors/technology/articles/nvidia-amd-intel-lead-chip-194439897.html", "pub": "03/28 03:44", "src": "GuruFocus.com", "note": ""}, {"cat": "🔬 半導體/AI", "title": "AMAT vs. ACMR: Which WFE Stock is the Better Buy Right Now?", "link": "https://finance.yahoo.com/markets/stocks/articles/amat-vs-acmr-wfe-stock-141100002.html", "pub": "03/27 22:11", "src": "Zacks", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Dow Jones Futures: Sell-Off Breaking Hearts As Oil Prices Hit $100 In Iran War; What To Do Now", "link": "https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-oil-prices-near-100-iran-war-drags-tesla-deliveries/?src=A00220&yptr=yahoo", "pub": "03/28 23:42", "src": "Investor's Business Daily", "note": ""}, {"cat": "🔬 半導體/AI", "title": "3 Artificial Intelligence (AI) Stocks to Buy at a Discount", "link": "https://www.fool.com/investing/2026/03/28/3-ai-stocks-to-buy-at-a-discount/", "pub": "03/28 20:35", "src": "Motley Fool", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Morgan Stanley sends clear message on semiconductor stocks after selloff", "link": "https://www.thestreet.com/investing/stocks/morgan-stanley-sends-clear-message-on-semiconductor-stocks-after-selloff-micron-mu", "pub": "03/28 10:33", "src": "TheStreet", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Broadcom (AVGO) Bags Another US Government Defense Deal", "link": "https://finance.yahoo.com/markets/stocks/articles/broadcom-avgo-bags-another-us-151842270.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "📈 大盤/總經", "title": "Anthropic eyes IPO, Microsoft stock set for worst quarter since 2008", "link": "https://finance.yahoo.com/video/anthropic-eyes-ipo-microsoft-stock-set-for-worst-quarter-since-2008-172856931.html", "pub": "03/28 01:28", "src": "Yahoo Finance Video", "note": ""}, {"cat": "🔬 半導體/AI", "title": "Shopify (SHOP) Adds Another AI Integration Successfully", "link": "https://finance.yahoo.com/sectors/technology/articles/shopify-shop-adds-another-ai-151849403.html", "pub": "03/28 23:18", "src": "Insider Monkey", "note": ""}, {"cat": "📈 大盤/總經", "title": "Meta, social media stocks continue slide Friday amid fallout from lawsuit losses", "link": "https://finance.yahoo.com/markets/article/meta-social-media-stocks-continue-slide-friday-amid-fallout-from-lawsuit-losses-182821052.html", "pub": "03/27 02:28", "src": "Yahoo Finance", "note": ""}, {"cat": "📈 大盤/總經", "title": "Leaked Meta memo reveals company’s bizarre plan after layoffs", "link": "https://www.thestreet.com/technology/leaked-meta-memo-reveals-companys-bizarre-plan-after-layoffs", "pub": "03/29 00:03", "src": "TheStreet", "note": ""}, {"cat": "📈 大盤/總經", "title": "Dow sheds nearly 800 points, stocks sink as volatility spikes higher", "link": "https://finance.yahoo.com/video/dow-sheds-nearly-800-points-stocks-sink-as-volatility-spikes-higher-204806451.html", "pub": "03/28 04:48", "src": "Yahoo Finance Video", "note": ""}, {"cat": "📈 大盤/總經", "title": "Vanguard’s VCR ETF Carries 40% Amazon and Tesla Exposure Dressed as Consumer Discretionary", "link": "https://247wallst.com/investing/2026/03/28/vanguards-vcr-etf-carries-40-amazon-and-tesla-exposure-dressed-as-consumer-discretionary/", "pub": "03/28 21:30", "src": "24/7 Wall St.", "note": ""}, {"cat": "🔬 半導體/AI", "title": "AI schism grips Washington as tech, labor vie for upper hand", "link": "https://finance.yahoo.com/economy/policy/articles/ai-schism-grips-washington-tech-130000063.html", "pub": "03/28 21:00", "src": "Bloomberg", "note": ""}, {"cat": "📈 大盤/總經", "title": "SPY Has Returned 217% Over 10 Years, But Its Top 3 Holdings Now Control the Outcome", "link": "https://247wallst.com/investing/2026/03/28/spy-has-returned-217-over-10-years-but-its-top-3-holdings-now-control-the-outcome/", "pub": "03/28 23:00", "src": "24/7 Wall St.", "note": ""}, {"cat": "📈 大盤/總經", "title": "RSPA’s 8.9% Yield Hides a Tax Problem Most Income Investors Never See Coming", "link": "https://247wallst.com/investing/2026/03/28/rspas-8-9-yield-hides-a-tax-problem-most-income-investors-never-see-coming/", "pub": "03/28 18:48", "src": "24/7 Wall St.", "note": ""}, {"cat": "📈 大盤/總經", "title": "OEF Returned 314.83% Over 10 Years While SPY Managed 223.37%", "link": "https://247wallst.com/investing/2026/03/27/oef-returned-314-83-over-10-years-while-spy-managed-223-37/", "pub": "03/27 23:15", "src": "24/7 Wall St.", "note": ""}, {"cat": "🇹🇼 台股", "title": "AI 創新應用大樓啟用 將串聯南科創造2.2兆元年產值、3.5萬就業機會", "link": "https://money.udn.com/money/story/5612/9408987", "pub": "03/28 19:21", "src": "經濟日報", "note": ""}, {"cat": "🇹🇼 台股", "title": "高雄第三園區聯外交通整體工程動土 卓揆：打造南部 AI 智慧城市", "link": "https://money.udn.com/money/story/5612/9408592", "pub": "03/28 13:36", "src": "經濟日報", "note": ""}, {"cat": "🇹🇼 台股", "title": "機票要變貴！油價上漲 國籍航空醞釀4月調高燃油附加費", "link": "https://money.udn.com/money/story/5612/9408466", "pub": "03/28 12:11", "src": "經濟日報", "note": ""}, {"cat": "🇹🇼 台股", "title": "美股挫台指期夜盤跌882點 法人：台股下週恐有壓", "link": "https://money.udn.com/money/story/5612/9408349", "pub": "03/28 11:09", "src": "經濟日報", "note": ""}];
 const NEWW       = ["ON"];
-const NEW_TICKERS = ["ON", "ADI"];
+const NEW_TICKERS = ["ON"];
 const CLAUDE_ANALYSIS = [];
 
 // ── Tab切換 ──
@@ -500,7 +500,7 @@ function renderNews(data) {
         '<span class="nt-cat" style="background:'+c+';color:#fff;padding:2px 8px;border-radius:6px;font-size:10px">'+n.cat+'</span>'+
         '<span class="nt-meta">'+n.pub+' · '+n.src+'</span>'+
       '</div>'+
-      '<a class="nt-title" href="'+n.link+'" target="_blank">'+n.title+'</a>'+
+      '<a class="nt-title" href="'+n.link+'" target="_blank" style="color:#fff;">'+n.title+'</a>'+
       (note ? '<div style="font-size:11px;color:#80cbc4;margin-top:4px;padding-left:2px">'+note+'</div>' : '')+
     '</div>';
   }).join('') : '<div style="color:#555;padding:20px;text-align:center">暫無新聞</div>';
@@ -579,99 +579,91 @@ function generateSummary() {
 }
 
 function generateDigest() {
-  const el = document.getElementById('newsDigest');
-  const timeEl = document.getElementById('digestTime');
+  var el     = document.getElementById('newsDigest');
+  var timeEl = document.getElementById('digestTime');
   if (!el) return;
 
-  // 用 CLAUDE_ANALYSIS 的資料
-  const analysis = (typeof CLAUDE_ANALYSIS !== 'undefined') ? CLAUDE_ANALYSIS : [];
+  var analysis = (typeof CLAUDE_ANALYSIS !== 'undefined') ? CLAUDE_ANALYSIS : [];
+
+  // 英文標題 → 中文說明對照（備援，沒有 Claude 時使用）
+  var zhMap = {
+    'magnificent': '七巨頭本週總市值蒸發逾8500億美元，AI科技股遭大幅拋售',
+    'celsius':     'Celsius股價較52週高點重挫49%，逢低是否買進有爭議',
+    'every magnificent': '七巨頭股票今年全面走跌，市場尋找最佳布局標的',
+    'google':      '分析師：Google廣告業務穩健，AI整合優勢不容小覷',
+    'xanadu':      'Xanadu量子運算新創IPO，與AMD合作備受關注',
+    'nvidia':      'NVIDIA受AI股拋售潮影響，長線算力需求不變',
+    'tsmc':        '台積電估值評估：股價回落後，市場對公允價值看法分歧',
+    'taiwan semi': '台積電估值評估：股價回落後，市場對公允價值看法分歧',
+    'quantum':     '量子運算概念股受到市場關注，技術仍在早期發展階段',
+    'semiconductor':'半導體族群整體承壓，設備股逢低關注',
+    'chip':        '晶片產業受市場情緒拖累，長線需求維持穩健',
+    'ai':          'AI相關股票本週波動劇烈，市場重新評估估值合理性',
+    'fed':         '聯準會利率決策影響科技股估值，市場關注後續動向',
+    'tariff':      '關稅政策不確定性持續，科技供應鏈受到波及',
+    'inflation':   '通膨數據牽動市場走向，科技股估值承壓',
+    'buy':         '分析師看好後市，視為逢低布局的投資機會',
+    'sell':        '市場情緒偏空，建議觀察關鍵支撐是否守穩',
+    'ipo':         'IPO市場持續活絡，科技業融資環境相對樂觀',
+    'partnership': '企業策略合作案公告，市場關注協作效益',
+    'growth':      '成長型股票逢低布局時機，長期投資人可留意',
+    'portfolio':   '長線投資組合建議：優質成長股仍具吸引力',
+  };
+
+  function getZhNote(title) {
+    var t = title.toLowerCase();
+    // 先找精確匹配
+    for (var key in zhMap) {
+      if (t.includes(key)) return zhMap[key];
+    }
+    return '';
+  }
+
+  function makeSection(emoji, title, color, newsArr) {
+    if (!newsArr || newsArr.length === 0) return '';
+    var rows = newsArr.map(function(n) {
+      // n 可能是字串（Claude分析）或物件（新聞）
+      if (typeof n === 'string') {
+        return '<div style="padding:3px 0;line-height:1.8;font-size:13px">🔴 ' + n + '</div>';
+      }
+      var zh = n.note || getZhNote(n.title) || n.title.substring(0, 55) + (n.title.length>55?'...':'');
+      var link = n.link ? '<a href="' + n.link + '" target="_blank" style="color:#555;font-size:10px;text-decoration:none"> [原文]</a>' : '';
+      return '<div style="padding:3px 0;line-height:1.8">🔴 <span style="font-size:13px;color:#fff">' +
+        zh + '</span>' + link + '</div>';
+    }).join('');
+    return '<div style="border-left:3px solid ' + color + ';padding-left:12px;margin-bottom:14px;">' +
+      '<div style="color:' + color + ';font-weight:700;margin-bottom:6px;font-size:13px;">' + emoji + ' ' + title + '</div>' +
+      rows + '</div>';
+  }
 
   if (analysis.length > 0) {
-    // 把 analysis 依類別分組顯示
-    var usItems = analysis.filter(function(a) {
-      return a.includes('美股') || a.includes('那指') || a.includes('費半') ||
-             a.includes('NASDAQ') || a.includes('巨頭') || a.includes('AI股');
-    });
-    var twItems = analysis.filter(function(a) {
-      return a.includes('台股') || a.includes('台積') || a.includes('PCB') ||
-             a.includes('CPO') || a.includes('衛星');
-    });
-    var intlItems = analysis.filter(function(a) {
-      return a.includes('國際') || a.includes('油價') || a.includes('川普') ||
-             a.includes('戰爭') || a.includes('伊朗') || a.includes('關稅');
-    });
-    var focusItems = analysis.filter(function(a) {
+    // Claude AI 生成：依關鍵字分類
+    var usItems   = analysis.filter(function(a){ return /美股|那指|費半|NASDAQ|巨頭|AI股/.test(a); });
+    var twItems   = analysis.filter(function(a){ return /台股|台積|PCB|CPO|衛星|大跌|指數/.test(a); });
+    var intlItems = analysis.filter(function(a){ return /國際|油價|川普|戰爭|伊朗|關稅|聯準會|Fed/.test(a); });
+    var focusItems = analysis.filter(function(a){
       return !usItems.includes(a) && !twItems.includes(a) && !intlItems.includes(a);
     });
 
-    var html2 = '<div style="border-left:3px solid #f44336;padding-left:12px;margin-bottom:12px;">';
-    html2 += '<div style="color:#f44336;font-weight:700;margin-bottom:6px;">📰 美股盤勢</div>';
-    if (usItems.length > 0) {
-      usItems.forEach(function(a) { html2 += '<div>' + a + '</div>'; });
-    } else {
-      html2 += '<div style="color:#555">無重大美股新聞</div>';
-    }
-    html2 += '</div>';
+    el.innerHTML =
+      makeSection('📰', '美股盤勢', '#ef5350', usItems.length   ? usItems   : [{title:'無重大美股新聞',note:'無重大美股新聞'}]) +
+      makeSection('📰', '台股盤勢', '#66bb6a', twItems.length   ? twItems   : [{title:'無重大台股新聞',note:'無重大台股新聞'}]) +
+      (intlItems.length  ? makeSection('🌊', '國際局勢', '#ffa726', intlItems)  : '') +
+      (focusItems.length ? makeSection('📈', '焦點股',   '#42a5f5', focusItems) : '');
 
-    html2 += '<div style="border-left:3px solid #4caf50;padding-left:12px;margin-bottom:12px;">';
-    html2 += '<div style="color:#4caf50;font-weight:700;margin-bottom:6px;">📰 台股盤勢</div>';
-    if (twItems.length > 0) {
-      twItems.forEach(function(a) { html2 += '<div>' + a + '</div>'; });
-    } else {
-      html2 += '<div style="color:#555">無重大台股新聞</div>';
-    }
-    html2 += '</div>';
-
-    if (intlItems.length > 0) {
-      html2 += '<div style="border-left:3px solid #ff9800;padding-left:12px;margin-bottom:12px;">';
-      html2 += '<div style="color:#ff9800;font-weight:700;margin-bottom:6px;">🌊 國際局勢</div>';
-      intlItems.forEach(function(a) { html2 += '<div>' + a + '</div>'; });
-      html2 += '</div>';
-    }
-
-    if (focusItems.length > 0) {
-      html2 += '<div style="border-left:3px solid #64b5f6;padding-left:12px;margin-bottom:12px;">';
-      html2 += '<div style="color:#64b5f6;font-weight:700;margin-bottom:6px;">📈 焦點股</div>';
-      focusItems.forEach(function(a) { html2 += '<div>' + a + '</div>'; });
-      html2 += '</div>';
-    }
-
-    el.innerHTML = html2;
     if (timeEl) timeEl.textContent = 'Claude AI 生成';
+
   } else {
-    // 沒有 Claude 分析，用關鍵字從新聞產生簡易整理
-    var usTitles = NEWS_DATA.filter(function(n) {
-      return n.cat === '🔬 半導體/AI' || n.cat === '📈 大盤/總經';
-    }).slice(0, 4);
-    var twTitles = NEWS_DATA.filter(function(n) {
-      return n.cat === '🇹🇼 台股';
-    }).slice(0, 3);
+    // 備援：從 NEWS_DATA 取新聞，標題轉中文
+    var usList = NEWS_DATA.filter(function(n){ return !n.cat.startsWith('🇹🇼'); }).slice(0, 5);
+    var twList = NEWS_DATA.filter(function(n){ return n.cat.startsWith('🇹🇼'); }).slice(0, 5);
 
-    var html2 = '';
-    if (usTitles.length > 0) {
-      html2 += '<div style="border-left:3px solid #f44336;padding-left:12px;margin-bottom:12px;">';
-      html2 += '<div style="color:#f44336;font-weight:700;margin-bottom:6px;">📰 美股重點新聞</div>';
-      usTitles.forEach(function(n) {
-        html2 += '<div>🔴 <a href="' + n.link + '" target="_blank" style="color:#90caf9;text-decoration:none">' + n.title.substring(0, 60) + '...</a></div>';
-        if (n.note) html2 += '<div style="color:#80cbc4;font-size:12px;padding-left:16px">↳ ' + n.note + '</div>';
-      });
-      html2 += '</div>';
-    }
-    if (twTitles.length > 0) {
-      html2 += '<div style="border-left:3px solid #4caf50;padding-left:12px;margin-bottom:12px;">';
-      html2 += '<div style="color:#4caf50;font-weight:700;margin-bottom:6px;">📰 台股重點新聞</div>';
-      twTitles.forEach(function(n) {
-        html2 += '<div>🔴 <a href="' + n.link + '" target="_blank" style="color:#90caf9;text-decoration:none">' + n.title.substring(0, 60) + '...</a></div>';
-        if (n.note) html2 += '<div style="color:#80cbc4;font-size:12px;padding-left:16px">↳ ' + n.note + '</div>';
-      });
-      html2 += '</div>';
-    }
+    var html2 =
+      makeSection('📰', '美股盤勢', '#ef5350', usList.length ? usList : null) +
+      makeSection('📰', '台股盤勢', '#66bb6a', twList.length ? twList : null);
 
-    if (!html2) {
-      html2 = '<div style="color:#555;font-size:12px">新聞整理將在下次執行後更新（需設定 Anthropic API Key）</div>';
-    }
-
-    el.innerHTML = html2;
+    el.innerHTML = html2 ||
+      '<div style="color:#555;font-size:12px">執行 python generate_dashboard.py 後更新</div>';
     if (timeEl) timeEl.textContent = '關鍵字摘要';
   }
 }

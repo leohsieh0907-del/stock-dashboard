@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 每日股市儀表板 2026/03/28 11:56</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:#0f1117;color:#e0e0e0;min-height:100vh;}
+.header{background:linear-gradient(135deg,#1a1f2e,#16213e);padding:18px 28px;border-bottom:1px solid #2a3a5c;display:flex;justify-content:space-between;align-items:center;}
+.header h1{font-size:20px;color:#64b5f6;font-weight:600;}
+.header .meta{font-size:12px;color:#888;margin-top:3px;}
+.update{font-size:12px;color:#4caf50;background:#1b3a2a;padding:4px 12px;border-radius:12px;}
+.container{padding:16px 20px;max-width:1600px;margin:0 auto;}
+.index-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.index-card{background:#1a1f2e;border:1px solid #2a3a5c;border-radius:10px;padding:14px 18px;position:relative;overflow:hidden;}
+.index-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.index-card.up::before{background:#4caf50;} .index-card.down::before{background:#f44336;}
+.iname{font-size:11px;color:#888;margin-bottom:5px;}
+.ival{font-size:22px;font-weight:700;color:#fff;}
+.ipct{font-size:13px;margin-top:3px;} .ipct.up{color:#4caf50;} .ipct.down{color:#f44336;}
+.tabs{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap;}
+.tab{padding:7px 16px;border-radius:18px;border:1px solid #2a3a5c;background:#1a1f2e;color:#888;cursor:pointer;font-size:12px;transition:all 0.2s;}
+.tab.active{background:#1565c0;border-color:#1565c0;color:#fff;}
+.tab:hover:not(.active){border-color:#64b5f6;color:#64b5f6;}
+.panel{display:none;} .panel.active{display:block;}
+/* 股票卡片 */
+.stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin-bottom:16px;}
+.stock-card{background:#1a1f2e;border:1px solid #2a3a5c;border-radius:10px;padding:14px;transition:border-color 0.2s;}
+.stock-card:hover{border-color:#64b5f6;}
+.stock-card.buy-card{border-left:3px solid #4caf50;}
+.stock-card.sell-card{border-left:3px solid #f44336;}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.card-ticker{font-size:16px;font-weight:700;color:#64b5f6;}
+.card-name{font-size:11px;color:#888;margin-top:2px;}
+.card-price{text-align:right;}
+.card-price .price{font-size:16px;font-weight:600;color:#fff;}
+.card-price .pct{font-size:12px;margin-top:2px;}
+.card-score{display:inline-flex;align-items:center;gap:4px;background:#1e2535;padding:3px 10px;border-radius:10px;font-size:12px;margin-bottom:10px;}
+.strategy-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.strat-item{background:#12181f;border-radius:6px;padding:6px 8px;}
+.strat-label{font-size:10px;color:#666;margin-bottom:2px;}
+.strat-val{font-size:11px;line-height:1.3;}
+.strat-sub{font-size:10px;color:#555;margin-top:2px;}
+/* 表格 */
+.stock-table{width:100%;border-collapse:collapse;font-size:12px;}
+.stock-table th{background:#1a2744;color:#888;font-weight:500;padding:9px 12px;text-align:left;border-bottom:1px solid #2a3a5c;position:sticky;top:0;z-index:1;}
+.stock-table td{padding:9px 12px;border-bottom:1px solid #1e2535;}
+.stock-table tr:hover td{background:#1e2535;}
+.ticker{font-weight:600;color:#64b5f6;font-size:13px;}
+.price{font-weight:600;color:#fff;}
+.up{color:#4caf50;} .down{color:#f44336;} .neutral{color:#888;}
+.badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;}
+.badge.buy{background:#1b3a2a;color:#4caf50;} .badge.sell{background:#3a1b1b;color:#f44336;}
+.rsi-wrap{display:flex;align-items:center;gap:6px;}
+.rsi-bar{width:60px;height:5px;background:#2a3a5c;border-radius:3px;flex-shrink:0;}
+.rsi-fill{height:100%;border-radius:3px;}
+.table-card{background:#1a1f2e;border:1px solid #2a3a5c;border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.table-card-header{padding:12px 18px;border-bottom:1px solid #2a3a5c;display:flex;align-items:center;justify-content:space-between;}
+.table-card-header h3{font-size:14px;color:#fff;font-weight:600;}
+.count{font-size:11px;color:#888;background:#1e2535;padding:2px 8px;border-radius:8px;}
+.table-scroll{overflow-x:auto;max-height:440px;overflow-y:auto;}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.chart-card{background:#1a1f2e;border:1px solid #2a3a5c;border-radius:10px;padding:16px;}
+.chart-card h3{font-size:13px;color:#888;margin-bottom:12px;font-weight:500;}
+.chart-wrap{position:relative;height:220px;}
+.filters{display:flex;gap:8px;padding:10px 14px;flex-wrap:wrap;align-items:center;border-bottom:1px solid #1e2535;}
+.filter-btn{padding:4px 12px;border-radius:12px;border:1px solid #2a3a5c;background:transparent;color:#888;cursor:pointer;font-size:11px;}
+.filter-btn.active{background:#1565c0;border-color:#1565c0;color:#fff;}
+.search-box{padding:4px 12px;border-radius:12px;border:1px solid #2a3a5c;background:#1e2535;color:#fff;font-size:11px;outline:none;width:140px;}
+.chip-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px;}
+.chip-card{background:#1a1f2e;border:1px solid #2a3a5c;border-radius:10px;padding:14px;}
+.chip-card h4{font-size:12px;color:#888;margin-bottom:10px;}
+.chip-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1e2535;font-size:12px;}
+.chip-row:last-child{border-bottom:none;}
+.chip-row .label{color:#aaa;}
+.futures-bar{margin-bottom:8px;}
+.futures-bar .fl{font-size:11px;color:#888;margin-bottom:3px;display:flex;justify-content:space-between;}
+.futures-track{height:8px;background:#2a3a5c;border-radius:4px;overflow:hidden;display:flex;}
+.futures-long{background:#4caf50;} .futures-short{background:#f44336;}
+.news-item{border-left:3px solid #1565c0;padding:10px 14px;margin-bottom:8px;background:#1a2744;border-radius:0 8px 8px 0;}
+.news-cat{font-size:10px;padding:2px 7px;border-radius:6px;margin-right:6px;}
+.news-title{color:#90caf9;font-size:13px;text-decoration:none;line-height:1.5;display:block;margin-top:4px;}
+.news-meta{font-size:10px;color:#555;}
+.stars{color:#ffc107;}
+@media(max-width:900px){.index-grid,.chart-grid,.chip-grid{grid-template-columns:1fr;}
+.stock-grid{grid-template-columns:1fr;}}
+
+/* 熱力圖 */
+.hm-row{display:flex;gap:4px;margin-bottom:4px;align-items:center;}
+.hm-lbl{font-size:10px;color:#888;width:80px;flex-shrink:0;}
+.hm-cell{flex:1;min-width:44px;height:46px;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-weight:600;cursor:pointer;transition:opacity 0.2s;gap:1px;}
+.hm-cell:hover{opacity:0.8;}
+.hm-cell .hm-code{font-size:8px;line-height:1.2;}
+.hm-cell .hm-pct{font-size:10px;line-height:1.2;}
+.hm-wrap{padding:8px;overflow-y:auto;max-height:240px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📊 每日股市儀表板 v3.0</h1>
+    <div class="meta">資料日期：2026-03-27　產生時間：2026/03/28 11:56</div>
+  </div>
+  <div class="update">✅ 自動更新完成</div>
+</div>
+
+<div class="container">
+
+  <div class="index-grid">
+    <div class="index-card down"><div class="iname">那斯達克 NASDAQ</div><div class="ival">20,948</div><div class="ipct down">▼ -2.15%</div></div>
+    <div class="index-card down"><div class="iname">S&P 500</div><div class="ival">6,369</div><div class="ipct down">▼ -1.67%</div></div>
+    <div class="index-card down"><div class="iname">費城半導體 SOX</div><div class="ival">7,458</div><div class="ipct down">▼ -1.69%</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('us',this)">🇺🇸 美股分析</div>
+    <div class="tab" onclick="switchTab('tw',this)">🇹🇼 台股分析</div>
+    <div class="tab" onclick="switchTab('options',this)">📊 選擇權</div>
+    <div class="tab" onclick="switchTab('futures',this)">📈 台指期</div>
+    <div class="tab" onclick="switchTab('strategy',this)">🎯 策略選股</div>
+    <div class="tab" onclick="switchTab('news',this)">📰 新聞</div>
+  </div>
+
+  <!-- 美股面板 -->
+  <div class="panel active" id="panel-us">
+    <div class="chart-grid">
+      <div class="chart-card"><h3>🇺🇸 美股族群熱力圖（漲跌幅）</h3><div class="hm-wrap" id="usHeatmap"></div></div>
+      <div class="chart-card"><h3>🇺🇸 美股族群對比（平均漲跌幅）</h3><div class="chart-wrap"><canvas id="usGrpBar"></canvas></div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header"><h3>🇺🇸 美股技術分析</h3><span class="count" id="usCnt">載入中</span></div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterCards('us','all',this)">全部</button>
+        <button class="filter-btn" onclick="filterCards('us','buy',this)">🟢 買進</button>
+        <button class="filter-btn" onclick="filterCards('us','sell',this)">🔴 賣出</button>
+        <button class="filter-btn" onclick="filterCards('us','oversold',this)">RSI超賣</button>
+        <button class="filter-btn" onclick="filterCards('us','score',this)">高評分≥3</button>
+        <button class="filter-btn" onclick="filterCards('us','ded',this)">📈 扣抵易漲</button>
+        <input class="search-box" placeholder="🔍 搜尋..." oninput="searchCards('us',this.value)">
+      </div>
+      <div id="usGrid" class="stock-grid" style="padding:14px;"></div>
+    </div>
+  </div>
+
+  <!-- 台股面板 -->
+  <div class="panel" id="panel-tw">
+    <div class="chart-grid">
+      <div class="chart-card"><h3>🇹🇼 台股族群熱力圖（漲跌幅）</h3><div class="hm-wrap" id="twHeatmap"></div></div>
+      <div class="chart-card"><h3>🇹🇼 台股族群對比（平均漲跌幅）</h3><div class="chart-wrap"><canvas id="twGrpBar"></canvas></div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header"><h3>🇹🇼 台股AI供應鏈技術分析</h3><span class="count" id="twCnt">載入中</span></div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterCards('tw','all',this)">全部</button>
+        <button class="filter-btn" onclick="filterCards('tw','buy',this)">🟢 買進</button>
+        <button class="filter-btn" onclick="filterCards('tw','sell',this)">🔴 賣出</button>
+        <button class="filter-btn" onclick="filterCards('tw','score',this)">高評分≥3</button>
+        <button class="filter-btn" onclick="filterCards('tw','ded',this)">📈 扣抵易漲</button>
+        <input class="search-box" placeholder="🔍 代號/名稱..." oninput="searchCards('tw',this.value)">
+      </div>
+      <div id="twGrid" class="stock-grid" style="padding:14px;"></div>
+    </div>
+    <div class="table-card" style="margin-top:14px;">
+      <div class="table-card-header"><h3>🏦 三大法人買賣超（📌焦點股有法人資料，其餘顯示收盤）</h3></div>
+      <div class="table-scroll">
+        <table class="stock-table">
+          <thead><tr><th>代號</th><th>名稱</th><th>收盤</th><th>漲跌</th><th>漲跌幅</th><th>成交量(張)</th><th>外資(張)</th><th>投信(張)</th><th>自營商(張)</th><th>合計</th><th>方向</th></tr></thead>
+          <tbody id="instTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 選擇權面板 -->
+  <div class="panel" id="panel-options">
+    <div class="chart-grid">
+      <div class="chart-card"><h3>Put/Call 比</h3><div class="chart-wrap"><canvas id="pcChart"></canvas></div></div>
+      <div class="chart-card"><h3>Call vs Put 未平倉</h3><div class="chart-wrap"><canvas id="oiChart"></canvas></div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header"><h3>📊 選擇權 Put/Call 比</h3></div>
+      <div class="table-scroll">
+        <table class="stock-table">
+          <thead><tr><th>股票</th><th>Call未平倉</th><th>Put未平倉</th><th>P/C比</th><th>籌碼傾向</th></tr></thead>
+          <tbody id="optTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 台指期面板 -->
+  <div class="panel" id="panel-futures">
+    <div class="chip-grid">
+      <div class="chip-card"><h4>【台指期 TX】三大法人未平倉</h4><div id="txBars"></div></div>
+      <div class="chip-card"><h4>【微台指 MTX】三大法人未平倉</h4><div id="mtxBars"></div></div>
+      <div class="chip-card">
+        <h4>📌 散戶多空研判</h4>
+        <div class="chip-row"><span class="label">外資淨部位</span><span class="val down">-39,919 口</span></div>
+        <div class="chip-row"><span class="label">投信淨部位</span><span class="val up">+38,169 口</span></div>
+        <div class="chip-row"><span class="label">法人合計</span><span class="val down">-1,750 口</span></div>
+        <div class="chip-row"><span class="label">散戶傾向</span><span style="color:#ffc107">➡️ 散戶中性</span></div>
+        <div class="chip-row"><span class="label">外資多空比</span><span class="val">0.17 🟢 外資偏空</span></div>
+      </div>
+      <div class="chip-card">
+        <h4>📊 大盤綜合研判</h4>
+        <div class="chip-row"><span class="label">那斯達克</span><span class="val down">-2.15%</span></div>
+        <div class="chip-row"><span class="label">費城半導體</span><span class="val down">-1.69%</span></div>
+        <div class="chip-row"><span class="label">資料日期</span><span class="val neutral">2026-03-27</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 策略選股面板 -->
+  <div class="panel" id="panel-strategy">
+    <div class="chart-grid">
+      <div class="chart-card"><h3>各策略符合檔數</h3><div class="chart-wrap"><canvas id="stratChart"></canvas></div></div>
+      <div class="chart-card"><h3>評分分佈（滿分10）</h3><div class="chart-wrap"><canvas id="scoreChart"></canvas></div></div>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header"><h3>🎯 全市場策略選股（美股+台股）</h3><span class="count" id="stratCnt">載入中</span></div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterStrat('all',this)">全部</button>
+        <button class="filter-btn" onclick="filterStrat('score',this)">評分≥3</button>
+        <button class="filter-btn" onclick="filterStrat('liv',this)">李佛摩突破</button>
+        <button class="filter-btn" onclick="filterStrat('golden',this)">GC黃金交叉</button>
+        <button class="filter-btn" onclick="filterStrat('rsi',this)">RSI超賣</button>
+        <button class="filter-btn" onclick="filterStrat('brk',this)">Breakout突破</button>
+        <button class="filter-btn" onclick="filterStrat('trd',this)">趨勢線突破</button>
+        <button class="filter-btn" onclick="filterStrat('ded',this)">扣抵易漲</button>
+        <button class="filter-btn" onclick="filterStrat('tw',this)">🇹🇼 台股</button>
+        <button class="filter-btn" onclick="filterStrat('us',this)">🇺🇸 美股</button>
+      </div>
+      <div class="table-scroll">
+        <table class="stock-table">
+          <thead><tr>
+            <th>股票</th><th>名稱</th><th>股價</th><th>漲跌幅</th><th>評分</th>
+            <th>李佛摩</th><th>SMA交叉</th><th>RSI</th><th>Breakout</th>
+            <th>雙線GC</th><th>趨勢線</th><th>MA20扣抵</th><th>成交量</th>
+          </tr></thead>
+          <tbody id="stratTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新聞面板 -->
+  <div class="panel" id="panel-news">
+    <div class="table-card" style="margin-bottom:14px;">
+      <div class="table-card-header"><h3>🤖 AI 盤勢總結分析</h3><span class="count" id="summaryTime"></span></div>
+      <div id="newsSummary" style="padding:16px;line-height:1.9;font-size:13px;color:#ccc;min-height:80px;"></div>
+    </div>
+    <div class="table-card">
+      <div class="table-card-header"><h3>📰 今日財經新聞</h3><span class="count" id="newsCnt">0 則</span></div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterNews('all',this)">全部</button>
+        <button class="filter-btn" onclick="filterNews('semi',this)">🔬 半導體/AI</button>
+        <button class="filter-btn" onclick="filterNews('macro',this)">📈 大盤/總經</button>
+        <button class="filter-btn" onclick="filterNews('tw',this)">🇹🇼 台股</button>
+      </div>
+      <div id="newsGrid" style="padding:14px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Tab切換 ──
+function switchTab(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── 策略顏色判斷 ──
+function sigClass(s) {
+  if (!s) return '';
+  if (s.includes('🟢') || s.includes('✅') || s.includes('🌟')) return 'up';
+  if (s.includes('🔴') || s.includes('❌')) return 'down';
+  if (s.includes('⚠️')) return 'warn';
+  return '';
+}
+
+const ALL_DATA   = [{"ticker": "NVDA", "price": 167.52, "pct": -2.17, "rsi": 31.4, "ma20": 179.43, "ma50": 183.48, "ma200": 179.21, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 1.07, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(179)<MA60(184)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=31.4", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$171", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.1x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰11谷9", "vol_sig": "➡️ 正常1.1x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "NVDA", "group": "AI晶片核心", "ded_ma20_dval": 0}, {"ticker": "AMD", "price": 201.99, "pct": -0.87, "rsi": 49.5, "ma20": 200.92, "ma50": 213.92, "ma200": 195.16, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.83, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$267", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(201)<MA60(214)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=49.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$221差9.6%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "➡️ 正常0.8x", "ded_ma20": "📈 續揚 ➡️ 平穩", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "AMD", "group": "AI晶片核心", "ded_ma20_dval": 0}, {"ticker": "ARM", "price": 144.13, "pct": -6.89, "rsi": 69.7, "ma20": 128.09, "ma50": 122.07, "ma200": 138.41, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 1.45, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$183", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(128)>MA60(120)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=69.7", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$167差15.7%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量1.5x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷6", "vol_sig": "✅ 量增1.5x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "ARM", "group": "AI晶片核心", "ded_ma20_dval": 0}, {"ticker": "AVGO", "price": 300.68, "pct": -2.82, "rsi": 23.0, "ma20": 323.18, "ma50": 327.33, "ma200": 326.13, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 0.79, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(323)<MA60(330)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=23.0", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$309", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷9", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "AVGO", "group": "AI晶片核心", "ded_ma20_dval": 0}, {"ticker": "MU", "price": 357.22, "pct": 0.5, "rsi": 42.3, "ma20": 406.51, "ma50": 404.7, "ma200": 238.38, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 1.03, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$471", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(407)>MA60(392)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=42.3", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$471差31.9%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.0x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷9", "vol_sig": "➡️ 正常1.0x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ⚠️ 易跌", "market": "US", "name": "MU", "group": "記憶體", "ded_ma20_dval": 0}, {"ticker": "AMAT", "price": 337.17, "pct": -0.41, "rsi": 49.2, "ma20": 350.52, "ma50": 344.13, "ma200": 244.94, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.87, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$396", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(351)>MA60(335)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=49.2", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$380差12.7%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷7", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "AMAT", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "KLAC", "price": 1443.21, "pct": -0.55, "rsi": 51.8, "ma20": 1466.46, "ma50": 1478.77, "ma200": 1160.47, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.78, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$1691", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1466)>MA60(1459)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=51.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$1582差9.6%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷7", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "KLAC", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "ONTO", "price": 204.23, "pct": -0.25, "rsi": 57.6, "ma20": 201.28, "ma50": 208.34, "ma200": 146.52, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.56, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$232", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(201)<MA60(204)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=57.6", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$223差9.3%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.6x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷8", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📉 下彎 ✅ 易漲", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "ONTO", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "AEHR", "price": 32.52, "pct": -5.93, "rsi": 34.7, "ma20": 38.43, "ma50": 33.23, "ma200": 24.86, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.85, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$47", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(38)>MA60(32)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=34.7", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$35", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$40", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "AEHR", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "TSM", "price": 326.74, "pct": 0.19, "rsi": 38.9, "ma20": 343.16, "ma50": 347.54, "ma200": 286.5, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 1.01, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$389", "sma_sig": "🔴 死亡交叉", "sma_detail": "MA20(343)穿MA60(343)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=38.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$372差13.9%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.0x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷10", "vol_sig": "➡️ 正常1.0x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ➡️ 平穩", "market": "US", "name": "TSM", "group": "晶圓代工", "ded_ma20_dval": 0}, {"ticker": "LITE", "price": 702.73, "pct": 2.02, "rsi": 55.8, "ma20": 687.22, "ma50": 577.75, "ma200": 288.64, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.68, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$809", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(687)>MA60(542)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=55.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$809差15.1%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.7x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷7", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📉 下彎 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "LITE", "group": "光通訊/CPO", "ded_ma20_dval": 0}, {"ticker": "NOK", "price": 7.98, "pct": -3.62, "rsi": 51.8, "ma20": 8.14, "ma50": 7.46, "ma200": 5.92, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 0.79, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$9", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(8)>MA60(7)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=51.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$9差10.5%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷9", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "NOK", "group": "光通訊/CPO", "ded_ma20_dval": 0}, {"ticker": "GOOGL", "price": 274.34, "pct": -2.34, "rsi": 22.0, "ma20": 300.52, "ma50": 313.44, "ma200": 262.43, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 1.2, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$349", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(301)<MA60(315)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=22.0", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$281", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.2x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰5谷6", "vol_sig": "➡️ 正常1.2x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "GOOGL", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "AMZN", "price": 199.34, "pct": -3.95, "rsi": 35.7, "ma20": 210.53, "ma50": 217.2, "ma200": 224.68, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 1.23, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(211)<MA60(221)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=35.7", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$205", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.2x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$212", "vol_sig": "✅ 量增1.2x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "AMZN", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "AAPL", "price": 248.8, "pct": -1.62, "rsi": 32.1, "ma20": 255.38, "ma50": 260.21, "ma200": 247.7, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 1.15, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$288", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(255)<MA60(261)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=32.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$267差7.1%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.1x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰7谷7", "vol_sig": "➡️ 正常1.1x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ➡️ 平穩", "market": "US", "name": "AAPL", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "MSFT", "price": 356.77, "pct": -2.51, "rsi": 8.7, "ma20": 392.82, "ma50": 410.02, "ma200": 477.38, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 1.15, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(393)<MA60(421)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=8.7", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$366", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.1x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷7", "vol_sig": "➡️ 正常1.1x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "MSFT", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "META", "price": 525.72, "pct": -3.99, "rsi": 18.0, "ma20": 620.79, "ma50": 643.11, "ma200": 686.48, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 1.96, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(621)<MA60(644)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=18.0", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$548", "dgc_sig": "❌ 均線下方", "dgc_detail": "量2.0x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$599", "vol_sig": "📈 放量2.0x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "META", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "SMCI", "price": 21.97, "pct": -1.08, "rsi": 25.2, "ma20": 28.65, "ma50": 30.36, "ma200": 40.29, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 0.71, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(29)<MA60(30)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=25.2", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$34差52.5%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.7x VCP:✗", "trd_sig": "⚠️ 突破(量不足)", "trd_detail": "線$21", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "SMCI", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "MRVL", "price": 94.88, "pct": -2.87, "rsi": 53.5, "ma20": 88.73, "ma50": 83.4, "ma200": 80.93, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 0.7, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$103", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(89)>MA60(84)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=53.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$101差6.1%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.7x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷8", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "MRVL", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "QCOM", "price": 127.11, "pct": -2.63, "rsi": 24.3, "ma20": 132.74, "ma50": 140.92, "ma200": 157.3, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 0.69, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(133)<MA60(146)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=24.3", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$128", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.7x VCP:✓", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$134", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "QCOM", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "2330.TW", "price": 1820.0, "pct": -1.09, "rsi": 51.8, "ma20": 1864.12, "ma50": 1816.16, "ma200": 1406.5, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 0.76, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$2018", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1864)>MA60(1771)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=51.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$1989差9.3%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✓", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$1861", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "台積電", "code": "2330", "group": "晶圓代工", "ded_ma20_dval": 0}, {"ticker": "2303.TW", "price": 57.8, "pct": -0.69, "rsi": 43.8, "ma20": 60.03, "ma50": 61.6, "ma200": 48.76, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.59, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$80", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(60)>MA60(60)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=43.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$66差13.5%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.6x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "聯電", "code": "2303", "group": "晶圓代工", "ded_ma20_dval": 0}, {"ticker": "2317.TW", "price": 199.5, "pct": -0.5, "rsi": 37.8, "ma20": 211.88, "ma50": 220.54, "ma200": 207.71, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 0.45, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(212)<MA60(222)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=37.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$241差20.8%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.4x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷8", "vol_sig": "📉 縮量0.4x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "鴻海", "code": "2317", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "2382.TW", "price": 289.0, "pct": 0.7, "rsi": 60.3, "ma20": 287.48, "ma50": 284.38, "ma200": 279.39, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.77, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$314", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(287)>MA60(282)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=60.3", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$302差4.5%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰7谷12", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "廣達", "code": "2382", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "3231.TW", "price": 127.0, "pct": 0.0, "rsi": 49.1, "ma20": 130.0, "ma50": 133.99, "ma200": 130.72, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 0.49, "score": 0, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(130)<MA60(137)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=49.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$138差8.3%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.5x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$130", "vol_sig": "📉 縮量0.5x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "緯創", "code": "3231", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "3711.TW", "price": 353.5, "pct": -1.53, "rsi": 62.9, "ma20": 344.25, "ma50": 324.46, "ma200": 216.58, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.84, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$394", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(344)>MA60(312)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=62.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$382差8.1%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷9", "vol_sig": "➡️ 正常0.8x", "ded_ma20": "📉 下彎 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "日月光", "code": "3711", "group": "先進封裝", "ded_ma20_dval": 0}, {"ticker": "2449.TW", "price": 278.5, "pct": -3.3, "rsi": 52.1, "ma20": 294.68, "ma50": 291.16, "ma200": 193.94, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.9, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$333", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(295)>MA60(283)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=52.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$328差17.8%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷10", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "京元電", "code": "2449", "group": "先進封裝", "ded_ma20_dval": 0}, {"ticker": "2454.TW", "price": 1585.0, "pct": -0.31, "rsi": 40.0, "ma20": 1710.25, "ma50": 1682.9, "ma200": 1411.31, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.99, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$1975", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1710)>MA60(1637)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=40.0", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$1590", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.0x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$1633", "vol_sig": "➡️ 正常1.0x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "聯發科", "code": "2454", "group": "IC設計/ASIC", "ded_ma20_dval": 0}, {"ticker": "3034.TW", "price": 399.0, "pct": 1.79, "rsi": 61.1, "ma20": 381.35, "ma50": 381.63, "ma200": 420.66, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 2.12, "score": 5, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(381)>MA60(380)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=61.1", "brk_sig": "🟢 突破買進(量✓)", "brk_detail": "$398 量2.1x", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量2.1x VCP:✗", "trd_sig": "🟢 突破下降線(量✓)", "trd_detail": "線$387,10峰", "vol_sig": "🔥 爆量2.1x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📉 下彎 ✅ 易漲", "market": "TW", "name": "聯詠", "code": "3034", "group": "IC設計/ASIC", "ded_ma20_dval": 0}, {"ticker": "3661.TW", "price": 3040.0, "pct": -0.82, "rsi": 51.6, "ma20": 3209.25, "ma50": 3317.0, "ma200": 3386.26, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 0.86, "score": 0, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(3209)<MA60(3335)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=51.6", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$3535差16.3%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "世芯-KY", "code": "3661", "group": "IC設計/ASIC", "ded_ma20_dval": 0}, {"ticker": "5388.TW", "price": 78.0, "pct": 3.72, "rsi": 57.2, "ma20": 78.38, "ma50": 80.54, "ma200": 91.01, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 1.61, "score": 0, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(78)<MA60(80)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=57.2", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$85差9.2%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.6x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "📈 放量1.6x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📉 下彎 ➡️ 平穩", "market": "TW", "name": "中磊", "code": "5388", "group": "IC設計/ASIC", "ded_ma20_dval": 0}, {"ticker": "3583.TW", "price": 497.5, "pct": -0.7, "rsi": 97.5, "ma20": 402.82, "ma50": 361.59, "ma200": 349.17, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.88, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$532", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(403)>MA60(357)", "rsi_sig": "🔴 超買出場", "rsi_detail": "RSI=97.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$532差6.9%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.9x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰7谷10", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "辛耘", "code": "3583", "group": "CoWoS設備", "ded_ma20_dval": 0}, {"ticker": "3037.TW", "price": 505.0, "pct": 0.6, "rsi": 65.3, "ma20": 489.45, "ma50": 396.71, "ma200": 213.78, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.27, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$594", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(489)>MA60(367)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=65.3", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$594差17.6%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.3x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰7谷8", "vol_sig": "📉 縮量0.3x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "欣興", "code": "3037", "group": "PCB/載板", "ded_ma20_dval": 0}, {"ticker": "3715.TW", "price": 203.5, "pct": 10.0, "rsi": 74.9, "ma20": 163.97, "ma50": 150.31, "ma200": 104.02, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 1.79, "score": 3, "liv_sig": "⚠️ 突破(乖離高)", "liv_detail": "突破$197乖離57.6%", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(164)>MA60(146)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=74.9", "brk_sig": "🟢 突破買進(量✓)", "brk_detail": "$197 量1.8x", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量1.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷12", "vol_sig": "📈 放量1.8x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "定穎", "code": "3715", "group": "PCB/載板", "ded_ma20_dval": 0}, {"ticker": "8046.TW", "price": 561.0, "pct": -1.41, "rsi": 69.5, "ma20": 510.02, "ma50": 424.25, "ma200": 260.02, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 1.96, "score": 3, "liv_sig": "➡️ 等待", "liv_detail": "等突破$603", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(510)>MA60(394)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=69.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$603差7.5%", "dgc_sig": "🟢 站上雙線+VCP", "dgc_detail": "量2.0x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷9", "vol_sig": "📈 放量2.0x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "南電", "code": "8046", "group": "PCB/載板", "ded_ma20_dval": 0}, {"ticker": "3017.TW", "price": 2195.0, "pct": -3.52, "rsi": 74.1, "ma20": 1904.75, "ma50": 1644.3, "ma200": 1227.98, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.9, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$2310", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1905)>MA60(1619)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=74.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$2310差5.2%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷11", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "奇鋐", "code": "3017", "group": "散熱", "ded_ma20_dval": 0}, {"ticker": "2308.TW", "price": 1510.0, "pct": -0.33, "rsi": 73.0, "ma20": 1396.75, "ma50": 1270.4, "ma200": 881.41, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.82, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$1565", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1397)>MA60(1221)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=73.0", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$1565差3.6%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.8x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷8", "vol_sig": "➡️ 正常0.8x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "台達電", "code": "2308", "group": "電源", "ded_ma20_dval": 0}, {"ticker": "6531.TW", "price": 507.0, "pct": -0.39, "rsi": 68.6, "ma20": 487.9, "ma50": 463.0, "ma200": 375.47, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.64, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$623", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(488)>MA60(458)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=68.6", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$623差22.9%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.6x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷8", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "愛普", "code": "6531", "group": "光通訊/CPO", "ded_ma20_dval": 0}, {"ticker": "4977.TW", "price": 200.0, "pct": 2.04, "rsi": 72.4, "ma20": 178.25, "ma50": 149.73, "ma200": 119.64, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.65, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$214", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(178)>MA60(148)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=72.4", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$214差7.0%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.6x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰10谷12", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "眾達-KY", "code": "4977", "group": "光通訊/CPO", "ded_ma20_dval": 0}, {"ticker": "2408.TW", "price": 219.5, "pct": -2.66, "rsi": 52.7, "ma20": 242.65, "ma50": 259.1, "ma200": 133.92, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 1.26, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$326", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(243)<MA60(248)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=52.7", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$291差32.6%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.3x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷7", "vol_sig": "✅ 量增1.3x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "南亞科", "code": "2408", "group": "記憶體", "ded_ma20_dval": 0}, {"ticker": "3010.TW", "price": 123.0, "pct": -1.2, "rsi": 52.7, "ma20": 126.62, "ma50": 121.9, "ma200": 105.06, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 0.46, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$142", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(127)>MA60(120)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=52.7", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$142差15.4%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.5x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "📉 縮量0.5x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "華立", "code": "3010", "group": "半導體材料", "ded_ma20_dval": 0}, {"ticker": "5434.TW", "price": 318.5, "pct": -0.16, "rsi": 53.9, "ma20": 325.57, "ma50": 325.61, "ma200": 302.27, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.85, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$355", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(326)>MA60(321)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=53.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$348差9.1%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "崇越", "code": "5434", "group": "半導體材料", "ded_ma20_dval": 0}, {"ticker": "2360.TW", "price": 1615.0, "pct": -1.52, "rsi": 73.0, "ma20": 1484.75, "ma50": 1211.08, "ma200": 746.23, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.92, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$1735", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1485)>MA60(1141)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=73.0", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$1735差7.4%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.9x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷8", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "致茂", "code": "2360", "group": "半導體測試", "ded_ma20_dval": 0}, {"ticker": "3030.TW", "price": 260.0, "pct": 2.77, "rsi": 60.0, "ma20": 251.12, "ma50": 210.43, "ma200": 174.64, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.47, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$282", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(251)>MA60(207)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=60.0", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$282差8.3%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.5x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰10谷7", "vol_sig": "📉 縮量0.5x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "德律", "code": "3030", "group": "半導體測試", "ded_ma20_dval": 0}, {"ticker": "3413.TW", "price": 311.0, "pct": -0.16, "rsi": 60.0, "ma20": 304.8, "ma50": 295.51, "ma200": 300.53, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.89, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$378", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(305)>MA60(294)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=60.0", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$326差4.8%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰11谷10", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "京鼎", "code": "3413", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "6438.TW", "price": 177.5, "pct": 2.9, "rsi": 75.9, "ma20": 157.8, "ma50": 152.03, "ma200": 155.64, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.95, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$185", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(158)>MA60(150)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=75.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$185差4.2%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量1.0x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷9", "vol_sig": "➡️ 正常1.0x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "迅得", "code": "6438", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "6770.TW", "price": 59.2, "pct": -5.73, "rsi": 49.8, "ma20": 66.33, "ma50": 63.32, "ma200": 33.76, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.82, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$79", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(66)>MA60(60)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=49.8", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$59", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷8", "vol_sig": "➡️ 正常0.8x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "力積電", "code": "6770", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "3045.TW", "price": 109.5, "pct": 0.46, "rsi": 62.5, "ma20": 108.25, "ma50": 107.35, "ma200": 107.98, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.58, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$112", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(108)>MA60(108)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=62.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$110差0.5%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.6x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰15谷17", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📈 續揚 ➡️ 平穩", "ded_ma50": "📈 續揚 ➡️ 平穩", "market": "TW", "name": "台灣大", "code": "3045", "group": "低軌衛星", "ded_ma20_dval": 0}, {"ticker": "6415.TW", "price": 293.0, "pct": -1.01, "rsi": 72.9, "ma20": 268.23, "ma50": 263.06, "ma200": 272.99, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.66, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$320", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(268)>MA60(251)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=72.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$320差9.2%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.7x VCP:✓", "trd_sig": "⚠️ 突破(量不足)", "trd_detail": "線$162", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "矽力-KY", "code": "6415", "group": "低軌衛星", "ded_ma20_dval": 0}, {"ticker": "3305.TW", "price": 106.5, "pct": 3.4, "rsi": 60.1, "ma20": 105.48, "ma50": 111.47, "ma200": 97.1, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.7, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$130", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(105)<MA60(111)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=60.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$122差14.1%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.7x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰12谷13", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "昇貿", "code": "3305", "group": "材料通路", "ded_ma20_dval": 0}];
+const US_DATA    = [{"ticker": "NVDA", "price": 167.52, "pct": -2.17, "rsi": 31.4, "ma20": 179.43, "ma50": 183.48, "ma200": 179.21, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 1.07, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(179)<MA60(184)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=31.4", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$171", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.1x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰11谷9", "vol_sig": "➡️ 正常1.1x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "NVDA", "group": "AI晶片核心", "ded_ma20_dval": 0}, {"ticker": "AMD", "price": 201.99, "pct": -0.87, "rsi": 49.5, "ma20": 200.92, "ma50": 213.92, "ma200": 195.16, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.83, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$267", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(201)<MA60(214)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=49.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$221差9.6%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "➡️ 正常0.8x", "ded_ma20": "📈 續揚 ➡️ 平穩", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "AMD", "group": "AI晶片核心", "ded_ma20_dval": 0}, {"ticker": "ARM", "price": 144.13, "pct": -6.89, "rsi": 69.7, "ma20": 128.09, "ma50": 122.07, "ma200": 138.41, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 1.45, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$183", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(128)>MA60(120)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=69.7", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$167差15.7%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量1.5x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷6", "vol_sig": "✅ 量增1.5x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "ARM", "group": "AI晶片核心", "ded_ma20_dval": 0}, {"ticker": "AVGO", "price": 300.68, "pct": -2.82, "rsi": 23.0, "ma20": 323.18, "ma50": 327.33, "ma200": 326.13, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 0.79, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(323)<MA60(330)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=23.0", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$309", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷9", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "AVGO", "group": "AI晶片核心", "ded_ma20_dval": 0}, {"ticker": "MU", "price": 357.22, "pct": 0.5, "rsi": 42.3, "ma20": 406.51, "ma50": 404.7, "ma200": 238.38, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 1.03, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$471", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(407)>MA60(392)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=42.3", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$471差31.9%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.0x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷9", "vol_sig": "➡️ 正常1.0x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ⚠️ 易跌", "market": "US", "name": "MU", "group": "記憶體", "ded_ma20_dval": 0}, {"ticker": "AMAT", "price": 337.17, "pct": -0.41, "rsi": 49.2, "ma20": 350.52, "ma50": 344.13, "ma200": 244.94, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.87, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$396", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(351)>MA60(335)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=49.2", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$380差12.7%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷7", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "AMAT", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "KLAC", "price": 1443.21, "pct": -0.55, "rsi": 51.8, "ma20": 1466.46, "ma50": 1478.77, "ma200": 1160.47, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.78, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$1691", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1466)>MA60(1459)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=51.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$1582差9.6%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷7", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "KLAC", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "ONTO", "price": 204.23, "pct": -0.25, "rsi": 57.6, "ma20": 201.28, "ma50": 208.34, "ma200": 146.52, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.56, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$232", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(201)<MA60(204)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=57.6", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$223差9.3%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.6x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷8", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📉 下彎 ✅ 易漲", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "ONTO", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "AEHR", "price": 32.52, "pct": -5.93, "rsi": 34.7, "ma20": 38.43, "ma50": 33.23, "ma200": 24.86, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.85, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$47", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(38)>MA60(32)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=34.7", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$35", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$40", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "AEHR", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "TSM", "price": 326.74, "pct": 0.19, "rsi": 38.9, "ma20": 343.16, "ma50": 347.54, "ma200": 286.5, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 1.01, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$389", "sma_sig": "🔴 死亡交叉", "sma_detail": "MA20(343)穿MA60(343)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=38.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$372差13.9%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.0x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷10", "vol_sig": "➡️ 正常1.0x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ➡️ 平穩", "market": "US", "name": "TSM", "group": "晶圓代工", "ded_ma20_dval": 0}, {"ticker": "LITE", "price": 702.73, "pct": 2.02, "rsi": 55.8, "ma20": 687.22, "ma50": 577.75, "ma200": 288.64, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.68, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$809", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(687)>MA60(542)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=55.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$809差15.1%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.7x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷7", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📉 下彎 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "LITE", "group": "光通訊/CPO", "ded_ma20_dval": 0}, {"ticker": "NOK", "price": 7.98, "pct": -3.62, "rsi": 51.8, "ma20": 8.14, "ma50": 7.46, "ma200": 5.92, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 0.79, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$9", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(8)>MA60(7)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=51.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$9差10.5%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷9", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "NOK", "group": "光通訊/CPO", "ded_ma20_dval": 0}, {"ticker": "GOOGL", "price": 274.34, "pct": -2.34, "rsi": 22.0, "ma20": 300.52, "ma50": 313.44, "ma200": 262.43, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 1.2, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$349", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(301)<MA60(315)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=22.0", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$281", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.2x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰5谷6", "vol_sig": "➡️ 正常1.2x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "GOOGL", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "AMZN", "price": 199.34, "pct": -3.95, "rsi": 35.7, "ma20": 210.53, "ma50": 217.2, "ma200": 224.68, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 1.23, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(211)<MA60(221)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=35.7", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$205", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.2x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$212", "vol_sig": "✅ 量增1.2x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "AMZN", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "AAPL", "price": 248.8, "pct": -1.62, "rsi": 32.1, "ma20": 255.38, "ma50": 260.21, "ma200": 247.7, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 1.15, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$288", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(255)<MA60(261)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=32.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$267差7.1%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.1x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰7谷7", "vol_sig": "➡️ 正常1.1x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ➡️ 平穩", "market": "US", "name": "AAPL", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "MSFT", "price": 356.77, "pct": -2.51, "rsi": 8.7, "ma20": 392.82, "ma50": 410.02, "ma200": 477.38, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 1.15, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(393)<MA60(421)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=8.7", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$366", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.1x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷7", "vol_sig": "➡️ 正常1.1x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "MSFT", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "META", "price": 525.72, "pct": -3.99, "rsi": 18.0, "ma20": 620.79, "ma50": 643.11, "ma200": 686.48, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 1.96, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(621)<MA60(644)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=18.0", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$548", "dgc_sig": "❌ 均線下方", "dgc_detail": "量2.0x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$599", "vol_sig": "📈 放量2.0x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "META", "group": "科技巨頭", "ded_ma20_dval": 0}, {"ticker": "SMCI", "price": 21.97, "pct": -1.08, "rsi": 25.2, "ma20": 28.65, "ma50": 30.36, "ma200": 40.29, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 0.71, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(29)<MA60(30)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=25.2", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$34差52.5%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.7x VCP:✗", "trd_sig": "⚠️ 突破(量不足)", "trd_detail": "線$21", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "SMCI", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "MRVL", "price": 94.88, "pct": -2.87, "rsi": 53.5, "ma20": 88.73, "ma50": 83.4, "ma200": 80.93, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 0.7, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$103", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(89)>MA60(84)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=53.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$101差6.1%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.7x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷8", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "US", "name": "MRVL", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "QCOM", "price": 127.11, "pct": -2.63, "rsi": 24.3, "ma20": 132.74, "ma50": 140.92, "ma200": 157.3, "signal": "Buy", "note": "超賣，留意進場", "vol_ratio": 0.69, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(133)<MA60(146)", "rsi_sig": "🟢 超賣買進", "rsi_detail": "RSI=24.3", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$128", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.7x VCP:✓", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$134", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "US", "name": "QCOM", "group": "AI伺服器", "ded_ma20_dval": 0}];
+const TW_DATA    = [{"ticker": "2330.TW", "price": 1820.0, "pct": -1.09, "rsi": 51.8, "ma20": 1864.12, "ma50": 1816.16, "ma200": 1406.5, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 0.76, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$2018", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1864)>MA60(1771)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=51.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$1989差9.3%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✓", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$1861", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "台積電", "code": "2330", "group": "晶圓代工", "ded_ma20_dval": 0}, {"ticker": "2303.TW", "price": 57.8, "pct": -0.69, "rsi": 43.8, "ma20": 60.03, "ma50": 61.6, "ma200": 48.76, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.59, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$80", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(60)>MA60(60)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=43.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$66差13.5%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.6x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "聯電", "code": "2303", "group": "晶圓代工", "ded_ma20_dval": 0}, {"ticker": "2317.TW", "price": 199.5, "pct": -0.5, "rsi": 37.8, "ma20": 211.88, "ma50": 220.54, "ma200": 207.71, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 0.45, "score": 1, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(212)<MA60(222)", "rsi_sig": "⚠️ 接近超賣", "rsi_detail": "RSI=37.8", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$241差20.8%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.4x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷8", "vol_sig": "📉 縮量0.4x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "鴻海", "code": "2317", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "2382.TW", "price": 289.0, "pct": 0.7, "rsi": 60.3, "ma20": 287.48, "ma50": 284.38, "ma200": 279.39, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.77, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$314", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(287)>MA60(282)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=60.3", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$302差4.5%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰7谷12", "vol_sig": "📉 縮量0.8x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "廣達", "code": "2382", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "3231.TW", "price": 127.0, "pct": 0.0, "rsi": 49.1, "ma20": 130.0, "ma50": 133.99, "ma200": 130.72, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 0.49, "score": 0, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(130)<MA60(137)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=49.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$138差8.3%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.5x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$130", "vol_sig": "📉 縮量0.5x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "緯創", "code": "3231", "group": "AI伺服器", "ded_ma20_dval": 0}, {"ticker": "3711.TW", "price": 353.5, "pct": -1.53, "rsi": 62.9, "ma20": 344.25, "ma50": 324.46, "ma200": 216.58, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.84, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$394", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(344)>MA60(312)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=62.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$382差8.1%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷9", "vol_sig": "➡️ 正常0.8x", "ded_ma20": "📉 下彎 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "日月光", "code": "3711", "group": "先進封裝", "ded_ma20_dval": 0}, {"ticker": "2449.TW", "price": 278.5, "pct": -3.3, "rsi": 52.1, "ma20": 294.68, "ma50": 291.16, "ma200": 193.94, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.9, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$333", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(295)>MA60(283)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=52.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$328差17.8%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷10", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "京元電", "code": "2449", "group": "先進封裝", "ded_ma20_dval": 0}, {"ticker": "2454.TW", "price": 1585.0, "pct": -0.31, "rsi": 40.0, "ma20": 1710.25, "ma50": 1682.9, "ma200": 1411.31, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.99, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$1975", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1710)>MA60(1637)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=40.0", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$1590", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.0x VCP:✗", "trd_sig": "🔴 下降線壓制", "trd_detail": "壓$1633", "vol_sig": "➡️ 正常1.0x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "聯發科", "code": "2454", "group": "IC設計/ASIC", "ded_ma20_dval": 0}, {"ticker": "3034.TW", "price": 399.0, "pct": 1.79, "rsi": 61.1, "ma20": 381.35, "ma50": 381.63, "ma200": 420.66, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 2.12, "score": 5, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(381)>MA60(380)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=61.1", "brk_sig": "🟢 突破買進(量✓)", "brk_detail": "$398 量2.1x", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量2.1x VCP:✗", "trd_sig": "🟢 突破下降線(量✓)", "trd_detail": "線$387,10峰", "vol_sig": "🔥 爆量2.1x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📉 下彎 ✅ 易漲", "market": "TW", "name": "聯詠", "code": "3034", "group": "IC設計/ASIC", "ded_ma20_dval": 0}, {"ticker": "3661.TW", "price": 3040.0, "pct": -0.82, "rsi": 51.6, "ma20": 3209.25, "ma50": 3317.0, "ma200": 3386.26, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 0.86, "score": 0, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(3209)<MA60(3335)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=51.6", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$3535差16.3%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "世芯-KY", "code": "3661", "group": "IC設計/ASIC", "ded_ma20_dval": 0}, {"ticker": "5388.TW", "price": 78.0, "pct": 3.72, "rsi": 57.2, "ma20": 78.38, "ma50": 80.54, "ma200": 91.01, "signal": "Sell", "note": "跌破所有均線", "vol_ratio": 1.61, "score": 0, "liv_sig": "❌ 不符", "liv_detail": "低於MA200", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(78)<MA60(80)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=57.2", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$85差9.2%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.6x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "📈 放量1.6x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📉 下彎 ➡️ 平穩", "market": "TW", "name": "中磊", "code": "5388", "group": "IC設計/ASIC", "ded_ma20_dval": 0}, {"ticker": "3583.TW", "price": 497.5, "pct": -0.7, "rsi": 97.5, "ma20": 402.82, "ma50": 361.59, "ma200": 349.17, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.88, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$532", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(403)>MA60(357)", "rsi_sig": "🔴 超買出場", "rsi_detail": "RSI=97.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$532差6.9%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.9x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰7谷10", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "辛耘", "code": "3583", "group": "CoWoS設備", "ded_ma20_dval": 0}, {"ticker": "3037.TW", "price": 505.0, "pct": 0.6, "rsi": 65.3, "ma20": 489.45, "ma50": 396.71, "ma200": 213.78, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.27, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$594", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(489)>MA60(367)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=65.3", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$594差17.6%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.3x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰7谷8", "vol_sig": "📉 縮量0.3x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "欣興", "code": "3037", "group": "PCB/載板", "ded_ma20_dval": 0}, {"ticker": "3715.TW", "price": 203.5, "pct": 10.0, "rsi": 74.9, "ma20": 163.97, "ma50": 150.31, "ma200": 104.02, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 1.79, "score": 3, "liv_sig": "⚠️ 突破(乖離高)", "liv_detail": "突破$197乖離57.6%", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(164)>MA60(146)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=74.9", "brk_sig": "🟢 突破買進(量✓)", "brk_detail": "$197 量1.8x", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量1.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷12", "vol_sig": "📈 放量1.8x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "定穎", "code": "3715", "group": "PCB/載板", "ded_ma20_dval": 0}, {"ticker": "8046.TW", "price": 561.0, "pct": -1.41, "rsi": 69.5, "ma20": 510.02, "ma50": 424.25, "ma200": 260.02, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 1.96, "score": 3, "liv_sig": "➡️ 等待", "liv_detail": "等突破$603", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(510)>MA60(394)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=69.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$603差7.5%", "dgc_sig": "🟢 站上雙線+VCP", "dgc_detail": "量2.0x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷9", "vol_sig": "📈 放量2.0x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "南電", "code": "8046", "group": "PCB/載板", "ded_ma20_dval": 0}, {"ticker": "3017.TW", "price": 2195.0, "pct": -3.52, "rsi": 74.1, "ma20": 1904.75, "ma50": 1644.3, "ma200": 1227.98, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.9, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$2310", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1905)>MA60(1619)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=74.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$2310差5.2%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷11", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "奇鋐", "code": "3017", "group": "散熱", "ded_ma20_dval": 0}, {"ticker": "2308.TW", "price": 1510.0, "pct": -0.33, "rsi": 73.0, "ma20": 1396.75, "ma50": 1270.4, "ma200": 881.41, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.82, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$1565", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1397)>MA60(1221)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=73.0", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$1565差3.6%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.8x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷8", "vol_sig": "➡️ 正常0.8x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "台達電", "code": "2308", "group": "電源", "ded_ma20_dval": 0}, {"ticker": "6531.TW", "price": 507.0, "pct": -0.39, "rsi": 68.6, "ma20": 487.9, "ma50": 463.0, "ma200": 375.47, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.64, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$623", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(488)>MA60(458)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=68.6", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$623差22.9%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.6x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰6谷8", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "愛普", "code": "6531", "group": "光通訊/CPO", "ded_ma20_dval": 0}, {"ticker": "4977.TW", "price": 200.0, "pct": 2.04, "rsi": 72.4, "ma20": 178.25, "ma50": 149.73, "ma200": 119.64, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.65, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$214", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(178)>MA60(148)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=72.4", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$214差7.0%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.6x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰10谷12", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "眾達-KY", "code": "4977", "group": "光通訊/CPO", "ded_ma20_dval": 0}, {"ticker": "2408.TW", "price": 219.5, "pct": -2.66, "rsi": 52.7, "ma20": 242.65, "ma50": 259.1, "ma200": 133.92, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 1.26, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$326", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(243)<MA60(248)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=52.7", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$291差32.6%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量1.3x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷7", "vol_sig": "✅ 量增1.3x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "南亞科", "code": "2408", "group": "記憶體", "ded_ma20_dval": 0}, {"ticker": "3010.TW", "price": 123.0, "pct": -1.2, "rsi": 52.7, "ma20": 126.62, "ma50": 121.9, "ma200": 105.06, "signal": "Buy", "note": "相對抗跌，持有", "vol_ratio": 0.46, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$142", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(127)>MA60(120)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=52.7", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$142差15.4%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.5x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "📉 縮量0.5x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "華立", "code": "3010", "group": "半導體材料", "ded_ma20_dval": 0}, {"ticker": "5434.TW", "price": 318.5, "pct": -0.16, "rsi": 53.9, "ma20": 325.57, "ma50": 325.61, "ma200": 302.27, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.85, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$355", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(326)>MA60(321)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=53.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$348差9.1%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰9谷9", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "崇越", "code": "5434", "group": "半導體材料", "ded_ma20_dval": 0}, {"ticker": "2360.TW", "price": 1615.0, "pct": -1.52, "rsi": 73.0, "ma20": 1484.75, "ma50": 1211.08, "ma200": 746.23, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.92, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$1735", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(1485)>MA60(1141)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=73.0", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$1735差7.4%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.9x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷8", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "致茂", "code": "2360", "group": "半導體測試", "ded_ma20_dval": 0}, {"ticker": "3030.TW", "price": 260.0, "pct": 2.77, "rsi": 60.0, "ma20": 251.12, "ma50": 210.43, "ma200": 174.64, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.47, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$282", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(251)>MA60(207)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=60.0", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$282差8.3%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.5x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰10谷7", "vol_sig": "📉 縮量0.5x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "德律", "code": "3030", "group": "半導體測試", "ded_ma20_dval": 0}, {"ticker": "3413.TW", "price": 311.0, "pct": -0.16, "rsi": 60.0, "ma20": 304.8, "ma50": 295.51, "ma200": 300.53, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.89, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$378", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(305)>MA60(294)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=60.0", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$326差4.8%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.9x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰11谷10", "vol_sig": "➡️ 正常0.9x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "京鼎", "code": "3413", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "6438.TW", "price": 177.5, "pct": 2.9, "rsi": 75.9, "ma20": 157.8, "ma50": 152.03, "ma200": 155.64, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.95, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$185", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(158)>MA60(150)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=75.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$185差4.2%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量1.0x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷9", "vol_sig": "➡️ 正常1.0x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "迅得", "code": "6438", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "6770.TW", "price": 59.2, "pct": -5.73, "rsi": 49.8, "ma20": 66.33, "ma50": 63.32, "ma200": 33.76, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.82, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$79", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(66)>MA60(60)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=49.8", "brk_sig": "🔴 跌破出場", "brk_detail": "跌破$59", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.8x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰8谷8", "vol_sig": "➡️ 正常0.8x", "ded_ma20": "📉 下彎 ⚠️ 易跌", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "力積電", "code": "6770", "group": "半導體設備", "ded_ma20_dval": 0}, {"ticker": "3045.TW", "price": 109.5, "pct": 0.46, "rsi": 62.5, "ma20": 108.25, "ma50": 107.35, "ma200": 107.98, "signal": "Buy", "note": "⭐⭐⭐⭐ 多頭格局", "vol_ratio": 0.58, "score": 1, "liv_sig": "➡️ 等待", "liv_detail": "等突破$112", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(108)>MA60(108)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=62.5", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$110差0.5%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.6x VCP:✓", "trd_sig": "➡️ 點位不足", "trd_detail": "峰15谷17", "vol_sig": "📉 縮量0.6x", "ded_ma20": "📈 續揚 ➡️ 平穩", "ded_ma50": "📈 續揚 ➡️ 平穩", "market": "TW", "name": "台灣大", "code": "3045", "group": "低軌衛星", "ded_ma20_dval": 0}, {"ticker": "6415.TW", "price": 293.0, "pct": -1.01, "rsi": 72.9, "ma20": 268.23, "ma50": 263.06, "ma200": 272.99, "signal": "Sell", "note": "超買，注意回調", "vol_ratio": 0.66, "score": 2, "liv_sig": "➡️ 等待", "liv_detail": "等突破$320", "sma_sig": "✅ 多頭排列", "sma_detail": "MA20(268)>MA60(251)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=72.9", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$320差9.2%", "dgc_sig": "✅ 站上雙線", "dgc_detail": "量0.7x VCP:✓", "trd_sig": "⚠️ 突破(量不足)", "trd_detail": "線$162", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📈 續揚 ✅ 易漲", "ded_ma50": "📈 續揚 ✅ 易漲", "market": "TW", "name": "矽力-KY", "code": "6415", "group": "低軌衛星", "ded_ma20_dval": 0}, {"ticker": "3305.TW", "price": 106.5, "pct": 3.4, "rsi": 60.1, "ma20": 105.48, "ma50": 111.47, "ma200": 97.1, "signal": "Sell", "note": "跌破 MA50", "vol_ratio": 0.7, "score": 0, "liv_sig": "➡️ 等待", "liv_detail": "等突破$130", "sma_sig": "❌ 空頭排列", "sma_detail": "MA20(105)<MA60(111)", "rsi_sig": "➡️ 中性", "rsi_detail": "RSI=60.1", "brk_sig": "➡️ 等待突破", "brk_detail": "距高$122差14.1%", "dgc_sig": "❌ 均線下方", "dgc_detail": "量0.7x VCP:✗", "trd_sig": "➡️ 點位不足", "trd_detail": "峰12谷13", "vol_sig": "📉 縮量0.7x", "ded_ma20": "📉 下彎 ➡️ 平穩", "ded_ma50": "📉 下彎 ⚠️ 易跌", "market": "TW", "name": "昇貿", "code": "3305", "group": "材料通路", "ded_ma20_dval": 0}];
+const OPT_DATA   = [{"ticker": "NVDA", "call": 72950, "put": 46555, "pc": 0.64}, {"ticker": "MU", "call": 84784, "put": 115617, "pc": 1.36}, {"ticker": "AMAT", "call": 6228, "put": 6546, "pc": 1.05}, {"ticker": "TSM", "call": 29486, "put": 39379, "pc": 1.34}, {"ticker": "NOK", "call": 26014, "put": 7808, "pc": 0.3}, {"ticker": "LITE", "call": 7548, "put": 7227, "pc": 0.96}, {"ticker": "GOOGL", "call": 8878, "put": 6381, "pc": 0.72}, {"ticker": "AMZN", "call": 12043, "put": 16856, "pc": 1.4}, {"ticker": "TSLA", "call": 49028, "put": 47146, "pc": 0.96}, {"ticker": "ARM", "call": 12381, "put": 3509, "pc": 0.28}, {"ticker": "AVGO", "call": 6025, "put": 8081, "pc": 1.34}, {"ticker": "AMD", "call": 55660, "put": 142104, "pc": 2.55}, {"ticker": "MRVL", "call": 18545, "put": 19068, "pc": 1.03}, {"ticker": "QCOM", "call": 6158, "put": 5037, "pc": 0.82}, {"ticker": "KLAC", "call": 3521, "put": 5901, "pc": 1.68}];
+const TW_LIST    = [{"code": "2303", "name": "聯電", "close": 57.8, "chg": -0.4, "pct": -0.69, "vol": 41614, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "2308", "name": "台達電", "close": 1510.0, "chg": -5.0, "pct": -0.33, "vol": 10527, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "2317", "name": "鴻海", "close": 199.5, "chg": -1.0, "pct": -0.5, "vol": 29525, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "2330", "name": "台積電", "close": 1820.0, "chg": -20.0, "pct": -1.09, "vol": 33883, "fi": -11136, "trust": 381, "dealer": 515, "total": -10240}, {"code": "2360", "name": "致茂", "close": 1615.0, "chg": -25.0, "pct": -1.52, "vol": 3636, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "2382", "name": "廣達", "close": 289.0, "chg": 2.0, "pct": 0.7, "vol": 13285, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "2408", "name": "南亞科", "close": 219.5, "chg": -6.0, "pct": -2.66, "vol": 133271, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "2449", "name": "京元電子", "close": 278.5, "chg": -9.5, "pct": -3.3, "vol": 18800, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "2454", "name": "聯發科", "close": 1585.0, "chg": -5.0, "pct": -0.31, "vol": 7673, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3010", "name": "華立", "close": 123.0, "chg": -1.5, "pct": -1.2, "vol": 744, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3017", "name": "奇鋐", "close": 2195.0, "chg": -80.0, "pct": -3.52, "vol": 5491, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3030", "name": "德律", "close": 260.0, "chg": 7.0, "pct": 2.77, "vol": 3568, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3034", "name": "聯詠", "close": 399.0, "chg": 7.0, "pct": 1.79, "vol": 9730, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3037", "name": "欣興", "close": 505.0, "chg": 3.0, "pct": 0.6, "vol": 5779, "fi": -1315, "trust": 174, "dealer": 175, "total": -966}, {"code": "3045", "name": "台灣大", "close": 109.5, "chg": 0.5, "pct": 0.46, "vol": 4957, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3231", "name": "緯創", "close": 127.0, "chg": 0.0, "pct": 0.0, "vol": 17630, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3305", "name": "昇貿", "close": 106.5, "chg": 3.5, "pct": 3.4, "vol": 2197, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3413", "name": "京鼎", "close": 311.0, "chg": -0.5, "pct": -0.16, "vol": 1669, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3583", "name": "辛耘", "close": 497.5, "chg": -3.5, "pct": -0.7, "vol": 3256, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3661", "name": "世芯-KY", "close": 3040.0, "chg": -25.0, "pct": -0.82, "vol": 1588, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3711", "name": "日月光投控", "close": 353.5, "chg": -5.5, "pct": -1.53, "vol": 17087, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3715", "name": "定穎投控", "close": 203.5, "chg": 18.5, "pct": 10.0, "vol": 76656, "fi": 4259, "trust": 394, "dealer": 226, "total": 4879}, {"code": "4977", "name": "眾達-KY", "close": 200.0, "chg": 4.0, "pct": 2.04, "vol": 11468, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "5388", "name": "中磊", "close": 78.0, "chg": 2.8, "pct": 3.72, "vol": 3538, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "5434", "name": "崇越", "close": 318.5, "chg": -0.5, "pct": -0.16, "vol": 452, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "6415", "name": "矽力*-KY", "close": 293.0, "chg": -3.0, "pct": -1.01, "vol": 4455, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "6438", "name": "迅得", "close": 177.5, "chg": 5.0, "pct": 2.9, "vol": 3757, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "6531", "name": "愛普*", "close": 507.0, "chg": -2.0, "pct": -0.39, "vol": 4059, "fi": -464, "trust": 45, "dealer": -55, "total": -474}, {"code": "6770", "name": "力積電", "close": 59.2, "chg": -3.6, "pct": -5.73, "vol": 222663, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "8046", "name": "南電", "close": 561.0, "chg": -8.0, "pct": -1.41, "vol": 25431, "fi": 0, "trust": 0, "dealer": 0, "total": 0}, {"code": "3081", "name": "3081", "close": null, "chg": null, "pct": null, "vol": null, "fi": -212, "trust": 28, "dealer": -69, "total": -253}, {"code": "5351", "name": "5351", "close": null, "chg": null, "pct": null, "vol": null, "fi": -292, "trust": 0, "dealer": -1, "total": -293}];
+const TX_DATA    = [{"name": "外資", "long": 8029, "short": 47948}, {"name": "投信", "long": 43167, "short": 4998}, {"name": "自營商", "long": 4263, "short": 5207}];
+const MTX_DATA   = [{"name": "外資", "long": 2129, "short": 2521}, {"name": "投信", "long": 116, "short": 44}, {"name": "自營商", "long": 5225, "short": 6302}];
+const NEWS_DATA  = [{"cat": "🔬 半導體/AI", "title": "'Magnificent 7' stocks wipe more than $850 billion in value as stock market sell-off hits AI winners hard", "link": "https://finance.yahoo.com/news/magnificent-7-stocks-wipe-more-than-850-billion-in-value-as-stock-market-sell-off-hits-ai-winners-hard-213921360.html", "pub": "03/28 05:39", "src": "Yahoo Finance", "ticker": "NVDA"}, {"cat": "📈 大盤/總經", "title": "Is Celsius Stock a Buy After Falling 49% From Its 52-Week High?", "link": "https://www.fool.com/investing/2026/03/27/is-celsius-stock-a-buy-after-falling-49-from-its-5/", "pub": "03/28 11:21", "src": "Motley Fool", "ticker": "NVDA"}, {"cat": "📈 大盤/總經", "title": "Every Magnificent Seven Stock Is Down This Year. This One Is a Screaming Buy", "link": "https://www.fool.com/investing/2026/03/27/every-magnificent-seven-stock-is-down-this-year-th/", "pub": "03/28 10:50", "src": "Motley Fool", "ticker": "NVDA"}, {"cat": "📈 大盤/總經", "title": "Why you should 'never count out' Google", "link": "https://finance.yahoo.com/video/why-you-should-never-count-out-google-215424047.html", "pub": "03/28 05:54", "src": "Yahoo Finance Video", "ticker": "AMD"}, {"cat": "🔬 半導體/AI", "title": "Xanadu IPO: CEO on AMD partnership, quantum computing, and more", "link": "https://finance.yahoo.com/video/xanadu-ipo-ceo-on-amd-partnership-quantum-computing-and-more-211825682.html", "pub": "03/28 05:18", "src": "Yahoo Finance Video", "ticker": "AMD"}, {"cat": "🔬 半導體/AI", "title": "Stock Market Today, March 27: Nvidia Slides as Valuation Drops Below S&P 500 on Forward Earnings", "link": "https://www.fool.com/coverage/stock-market-today/2026/03/27/stock-market-today-march-27-nvidia-slides-as-valuation-drops-below-sp-500-on-forward-earnings/", "pub": "03/28 05:22", "src": "Motley Fool", "ticker": "AMD"}, {"cat": "🔬 半導體/AI", "title": "Assessing Taiwan Semiconductor (NYSE:TSM) Valuation After Recent Pullback And Conflicting Fair Value Signals", "link": "https://finance.yahoo.com/markets/stocks/articles/assessing-taiwan-semiconductor-nyse-tsm-170806521.html", "pub": "03/28 01:08", "src": "Simply Wall St.", "ticker": "TSM"}, {"cat": "🔬 半導體/AI", "title": "Broadcom vs. TSMC: Which AI Chip Stock Is the Better Buy?", "link": "https://finance.yahoo.com/markets/stocks/articles/broadcom-vs-tsmc-ai-chip-165415420.html", "pub": "03/28 00:54", "src": "GuruFocus.com", "ticker": "TSM"}, {"cat": "🔬 半導體/AI", "title": "TSMC Is Down, the Iran War Is Rattling Chip Stocks, and That's Exactly Why Long-Term Investors Should Pay Attention", "link": "https://www.fool.com/investing/2026/03/27/tsmc-is-down-the-iran-war-is-rattling-chip-stocks/", "pub": "03/28 00:50", "src": "Motley Fool", "ticker": "TSM"}, {"cat": "🔬 半導體/AI", "title": "Anthropic eyes an October IPO, which could raise over $60B", "link": "https://finance.yahoo.com/video/anthropic-eyes-an-october-ipo-which-could-raise-over-60b-215736166.html", "pub": "03/28 05:57", "src": "Yahoo Finance Video", "ticker": "MSFT"}, {"cat": "📈 大盤/總經", "title": "Anthropic eyes IPO, Microsoft stock set for worst quarter since 2008", "link": "https://finance.yahoo.com/video/anthropic-eyes-ipo-microsoft-stock-set-for-worst-quarter-since-2008-172856931.html", "pub": "03/28 01:28", "src": "Yahoo Finance Video", "ticker": "MSFT"}, {"cat": "📈 大盤/總經", "title": "Morning Brief: Stocks see the biggest losses since the war began", "link": "https://finance.yahoo.com/news/morning-brief-stocks-see-the-biggest-losses-since-the-war-began-100020476.html", "pub": "03/27 18:00", "src": "Yahoo Finance", "ticker": "MSFT"}, {"cat": "📈 大盤/總經", "title": "Meta, social media stocks continue slide Friday amid fallout from lawsuit losses", "link": "https://finance.yahoo.com/markets/article/meta-social-media-stocks-continue-slide-friday-amid-fallout-from-lawsuit-losses-182821052.html", "pub": "03/27 02:28", "src": "Yahoo Finance", "ticker": "META"}, {"cat": "📈 大盤/總經", "title": "Meta stock falls on court ruling, but it still has 'one chance'", "link": "https://finance.yahoo.com/video/meta-stock-falls-on-court-ruling-but-it-still-has-one-chance-150615716.html", "pub": "03/27 23:06", "src": "Yahoo Finance Video", "ticker": "META"}, {"cat": "📈 大盤/總經", "title": "Dow sheds nearly 800 points, stocks sink as volatility spikes higher", "link": "https://finance.yahoo.com/video/dow-sheds-nearly-800-points-stocks-sink-as-volatility-spikes-higher-204806451.html", "pub": "03/28 04:48", "src": "Yahoo Finance Video", "ticker": "AAPL"}, {"cat": "🔬 半導體/AI", "title": "Buy UPS. Better Days Await the Stock.", "link": "https://www.barrons.com/articles/buy-ups-stock-price-pick-df666106?siteid=yhoof2&yptr=yahoo", "pub": "03/28 10:17", "src": "Barrons.com", "ticker": "AMZN"}, {"cat": "📈 大盤/總經", "title": "Why Alphabet (GOOGL) Is Down 8.9% After Landmark YouTube Addiction Liability Verdict And What's Next", "link": "https://finance.yahoo.com/markets/stocks/articles/why-alphabet-googl-down-8-030859351.html", "pub": "03/28 11:08", "src": "Simply Wall St.", "ticker": "GOOGL"}, {"cat": "📈 大盤/總經", "title": "Dow Jones Dives, Oil Prices Hits $100 Amid Iran War; Tesla Looms", "link": "https://www.investors.com/market-trend/stock-market-today/dow-jones-futures-oil-prices-near-100-iran-war-drags-tesla-deliveries/?src=A00220&yptr=yahoo", "pub": "03/28 10:49", "src": "Investor's Business Daily", "ticker": "MU"}, {"cat": "🔬 半導體/AI", "title": "Morgan Stanley sends clear message on semiconductor stocks after selloff", "link": "https://www.thestreet.com/investing/stocks/morgan-stanley-sends-clear-message-on-semiconductor-stocks-after-selloff-micron-mu", "pub": "03/28 10:33", "src": "TheStreet", "ticker": "MU"}, {"cat": "📈 大盤/總經", "title": "The Evolving Earnings Picture Amid Elevated Oil Prices", "link": "https://finance.yahoo.com/sectors/energy/articles/evolving-earnings-picture-amid-elevated-234100662.html", "pub": "03/28 07:41", "src": "Zacks", "ticker": "MU"}, {"cat": "🔬 半導體/AI", "title": "Nvidia, AMD and Intel Lead Chip Stocks Sell-Off Amid Middle East Tension", "link": "https://finance.yahoo.com/sectors/technology/articles/nvidia-amd-intel-lead-chip-194439897.html", "pub": "03/28 03:44", "src": "GuruFocus.com", "ticker": "AMAT"}, {"cat": "📈 大盤/總經", "title": "AMAT vs. ACMR: Which WFE Stock is the Better Buy Right Now?", "link": "https://finance.yahoo.com/markets/stocks/articles/amat-vs-acmr-wfe-stock-141100002.html", "pub": "03/27 22:11", "src": "Zacks", "ticker": "AMAT"}, {"cat": "🔬 半導體/AI", "title": "Which Chip Equipment Stock Now Offers the Smartest Dip Buy?", "link": "https://247wallst.com/investing/2026/03/27/which-chip-equipment-stock-now-offers-the-smartest-dip-buy/", "pub": "03/27 21:50", "src": "24/7 Wall St.", "ticker": "AMAT"}];
+function renderCard(d) {
+  const isTW  = d.market === 'TW';
+  const flag  = isTW ? '🇹🇼' : '🇺🇸';
+  const code  = isTW ? d.code : d.ticker;
+  const name  = d.name || d.ticker;
+  const pc    = d.pct >= 0 ? 'up' : 'down';
+  const pcts  = (d.pct>=0?'+':'') + d.pct.toFixed(2) + '%';
+  const bCls  = d.signal==='Buy' ? 'buy-card' : 'sell-card';
+  const stars = '⭐'.repeat(Math.min(d.score||0,10));
+  const rsiColor = d.rsi > 70 ? '#f44336' : d.rsi < 30 ? '#4caf50' : '#ffc107';
+  const m200s = d.ma200 ? '$'+d.ma200.toLocaleString() : 'N/A';
+
+  return '<div class="stock-card '+bCls+'">' +
+    '<div class="card-header">' +
+      '<div><div class="card-ticker">'+flag+' '+code+'</div><div class="card-name">'+name+'</div></div>' +
+      '<div class="card-price"><div class="price">$'+d.price.toLocaleString()+'</div><div class="pct '+pc+'">'+pcts+'</div></div>' +
+    '</div>' +
+    '<div class="card-score"><span class="stars">'+stars+'</span>&nbsp;'+d.score+'/10&nbsp;|&nbsp;RSI '+d.rsi+
+      '&nbsp;|&nbsp;MA50 $'+d.ma50+'&nbsp;|&nbsp;MA200 '+m200s+'</div>' +
+    '<div class="strategy-grid">' +
+      stItem('🏹 李佛摩', d.liv_sig, d.liv_detail) +
+      stItem('📊 SMA交叉', d.sma_sig, d.sma_detail) +
+      stItem('📈 RSI回歸', d.rsi_sig, d.rsi_detail) +
+      stItem('💥 Breakout', d.brk_sig, d.brk_detail) +
+      stItem('🌟 雙線GC', d.dgc_sig, d.dgc_detail) +
+      stItem('📐 趨勢線', d.trd_sig, d.trd_detail) +
+      stItem('🔢 MA20扣抵', d.ded_ma20, '') +
+      stItem('🔢 MA50扣抵', d.ded_ma50, '') +
+      stItem('📦 成交量', d.vol_sig, '量比'+d.vol_ratio+'x') +
+      stItem('🏆 綜合信號', d.signal==='Buy'?'🟢 買進':'🔴 賣出', d.note) +
+    '</div></div>';
+}
+
+function stItem(label, val, sub) {
+  const cls = sigClass(val);
+  return '<div class="strat-item">'+
+    '<div class="strat-label">'+label+'</div>'+
+    '<div class="strat-val '+cls+'">'+(val||'-')+'</div>'+
+    (sub?'<div class="strat-sub">'+sub+'</div>':'')+
+  '</div>';
+}
+
+function renderCards(containerId, data, cntId) {
+  const grid = document.getElementById(containerId);
+  if(!grid) return;
+  grid.innerHTML = data.map(renderCard).join('') || '<div style="color:#555;padding:20px">無資料</div>';
+  if(cntId) document.getElementById(cntId).textContent = data.length+' 檔';
+}
+
+function filterCards(market, type, btn) {
+  const prefix = '#panel-'+market+' .filter-btn';
+  document.querySelectorAll(prefix).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const src = market==='us' ? US_DATA : TW_DATA;
+  let data = [...src];
+  if(type==='buy') data = data.filter(d=>d.signal==='Buy');
+  if(type==='sell') data = data.filter(d=>d.signal==='Sell');
+  if(type==='oversold') data = data.filter(d=>d.rsi<30);
+  if(type==='score') data = data.filter(d=>d.score>=3);
+  if(type==='ded') data = data.filter(d=>(d.ded_ma20||'').includes('續揚')&&(d.ded_ma20||'').includes('易漲'));
+  const gridId = market==='us' ? 'usGrid' : 'twGrid';
+  const cntId  = market==='us' ? 'usCnt'  : 'twCnt';
+  renderCards(gridId, data, cntId);
+}
+
+function searchCards(market, val) {
+  const src = market==='us' ? US_DATA : TW_DATA;
+  const data = src.filter(d => (d.ticker+d.name+(d.code||'')).toLowerCase().includes(val.toLowerCase()));
+  const gridId = market==='us' ? 'usGrid' : 'twGrid';
+  const cntId  = market==='us' ? 'usCnt'  : 'twCnt';
+  renderCards(gridId, data, cntId);
+}
+
+// ── 三大法人表格 ──
+function renderInst() {
+  document.getElementById('instTbody').innerHTML = TW_LIST.map(d => {
+    const pc = (d.pct||0)>0?'up':(d.pct||0)<0?'down':'neutral';
+    const tc = (d.total||0)>0?'up':(d.total||0)<0?'down':'neutral';
+    const dir = (d.total||0)>0?'🔴 買超':(d.total||0)<0?'🟢 賣超':'➡️ 持平';
+    return '<tr>'+
+      '<td class="ticker">'+d.code+'</td>'+
+      '<td>'+(d.name||d.code)+'</td>'+
+      '<td class="price">'+(d.close?'$'+d.close.toLocaleString():'-')+'</td>'+
+      '<td class="'+pc+'">'+(d.pct!=null?(d.pct>0?'+':'')+d.pct.toFixed(2)+'%':'-')+'</td>'+
+      '<td>'+(d.vol!=null?d.vol.toLocaleString():'-')+'</td>'+
+      '<td class="'+((d.fi||0)>0?'up':'down')+'">'+((d.fi||0)>0?'+':'')+(d.fi||0).toLocaleString()+'</td>'+
+      '<td class="'+((d.trust||0)>0?'up':'down')+'">'+((d.trust||0)>0?'+':'')+(d.trust||0).toLocaleString()+'</td>'+
+      '<td class="'+((d.dealer||0)>0?'up':'down')+'">'+((d.dealer||0)>0?'+':'')+(d.dealer||0).toLocaleString()+'</td>'+
+      '<td class="'+tc+'" style="font-weight:600">'+((d.total||0)>0?'+':'')+(d.total||0).toLocaleString()+'</td>'+
+      '<td>'+dir+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+// ── 選擇權表格 ──
+function renderOpt() {
+  document.getElementById('optTbody').innerHTML = OPT_DATA.map(d => {
+    const dc = d.pc>1.2?'down':d.pc<0.8?'up':'neutral';
+    const dir = d.pc>1.2?'🔴 偏空':d.pc<0.8?'🟢 偏多':'➡️ 中性';
+    return '<tr>'+
+      '<td class="ticker">'+d.ticker+'</td>'+
+      '<td class="up">'+d.call.toLocaleString()+'</td>'+
+      '<td class="down">'+d.put.toLocaleString()+'</td>'+
+      '<td class="'+dc+'" style="font-weight:600">'+d.pc.toFixed(2)+'</td>'+
+      '<td>'+dir+'</td></tr>';
+  }).join('');
+}
+
+// ── 期貨橫條 ──
+function renderFutures(data, id) {
+  document.getElementById(id).innerHTML = data.map(d => {
+    const tot = d.long+d.short;
+    const lp  = tot ? (d.long/tot*100).toFixed(1) : 50;
+    const net = d.long-d.short;
+    const nc  = net>0?'up':'down';
+    return '<div class="futures-bar">'+
+      '<div class="fl"><span>'+d.name+'</span><span class="'+nc+'">'+(net>0?'+':'')+net.toLocaleString()+' 口</span></div>'+
+      '<div class="futures-track"><div class="futures-long" style="width:'+lp+'%"></div><div class="futures-short" style="width:'+(100-lp)+'%"></div></div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:10px;color:#555;margin-top:2px"><span>多 '+d.long.toLocaleString()+'</span><span>空 '+d.short.toLocaleString()+'</span></div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── 策略選股表格 ──
+function renderStrat(data) {
+  document.getElementById('stratCnt').textContent = data.length+' 檔';
+  document.getElementById('stratTbody').innerHTML = data.map(d => {
+    const flag = d.market==='TW' ? '🇹🇼' : '🇺🇸';
+    const code = d.market==='TW' ? (d.code||d.ticker.replace('.TW','')) : d.ticker;
+    const pc   = d.pct>=0?'up':'down';
+    const stars= '⭐'.repeat(Math.min(d.score||0,5));
+    return '<tr>'+
+      '<td class="ticker">'+flag+' '+code+'</td>'+
+      '<td style="font-size:11px;color:#aaa">'+d.name+'</td>'+
+      '<td class="price">$'+d.price.toLocaleString()+'</td>'+
+      '<td class="'+pc+'">'+(d.pct>=0?'+':'')+d.pct.toFixed(2)+'%</td>'+
+      '<td><span class="stars">'+stars+'</span> '+(d.score||0)+'/10</td>'+
+      '<td style="font-size:10px" class="'+sigClass(d.liv_sig)+'">'+((d.liv_sig||'').substring(0,12))+'</td>'+
+      '<td style="font-size:10px" class="'+sigClass(d.sma_sig)+'">'+((d.sma_sig||'').substring(0,10))+'</td>'+
+      '<td style="font-size:10px" class="'+sigClass(d.rsi_sig)+'">'+((d.rsi_sig||'').substring(0,10))+'</td>'+
+      '<td style="font-size:10px" class="'+sigClass(d.brk_sig)+'">'+((d.brk_sig||'').substring(0,10))+'</td>'+
+      '<td style="font-size:10px" class="'+sigClass(d.dgc_sig)+'">'+((d.dgc_sig||'').substring(0,10))+'</td>'+
+      '<td style="font-size:10px" class="'+sigClass(d.trd_sig)+'">'+((d.trd_sig||'').substring(0,12))+'</td>'+
+      '<td style="font-size:10px" class="'+((d.ded_ma20||'').includes('續揚')?'up':(d.ded_ma20||'').includes('下彎')?'down':'neutral')+'">'+((d.ded_ma20||'-').substring(0,10))+'</td>'+
+      '<td style="font-size:10px" class="'+((d.vol_sig||'').includes('爆量')||(d.vol_sig||'').includes('放量')?'up':'neutral')+'">'+((d.vol_sig||'-').substring(0,10))+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function filterStrat(type, btn) {
+  document.querySelectorAll('#panel-strategy .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  let data = [...ALL_DATA];
+  if(type==='score')  data=data.filter(d=>d.score>=3);
+  if(type==='liv')    data=data.filter(d=>(d.liv_sig||'').includes('🟢'));
+  if(type==='golden') data=data.filter(d=>(d.sma_sig||'').includes('黃金')||(d.dgc_sig||'').includes('GC'));
+  if(type==='rsi')    data=data.filter(d=>(d.rsi_sig||'').includes('超賣'));
+  if(type==='brk')    data=data.filter(d=>(d.brk_sig||'').includes('突破買進'));
+  if(type==='trd')    data=data.filter(d=>(d.trd_sig||'').includes('突破下降'));
+  if(type==='ded')    data=data.filter(d=>(d.ded_ma20||'').includes('續揚')&&(d.ded_ma20||'').includes('易漲'));
+  if(type==='tw')     data=data.filter(d=>d.market==='TW');
+  if(type==='us')     data=data.filter(d=>d.market==='US');
+  data.sort((a,b)=>b.score-a.score);
+  renderStrat(data);
+}
+
+// ── 新聞 ──
+function renderNews(data) {
+  const cats = {'🔬 半導體/AI':'#1565c0','📈 大盤/總經':'#2e7d32','🇹🇼 台股/TSM':'#e65100'};
+  const zhNotes = {
+    'magnificent':'🔴 七巨頭本週總市值蒸發逾8500億美元，AI股受挫',
+    'nvidia':'🔴 NVIDIA 受拋售潮影響，長線AI算力需求不變',
+    'semiconductor':'🔬 半導體族群整體承壓，設備股逢低關注',
+    'tariff':'⚠️ 關稅不確定性持續，台廠供應鏈承壓',
+    'fed':'📊 Fed 利率動向牽動科技股估值，關注後續發言',
+    'rate':'📊 利率高檔維持，壓抑成長股本益比',
+    'google':'🔵 Google 廣告穩健，AI搜尋持續擴張',
+    'microsoft':'🔵 Azure AI 需求強勁，回調提供布局機會',
+    'tsmc':'🇹🇼 台積電 CoWoS 需求旺，外資短線賣超',
+    'anthropic':'🤖 Anthropic 積極融資 IPO，AI競賽持續',
+    'quantum':'🔬 量子運算長線主題，目前仍在早期階段',
+    'buy':'🟢 分析師看好，逢低布局訊號',
+    'ipo':'📈 IPO 市場活絡，科技業融資環境佳',
+    'reverse split':'⚠️ 反向分割為財務壓力警訊，謹慎看待',
+    'portfolio':'💼 長線組合建議，優質成長股具吸引力',
+    'worst':'🔴 季度表現不佳，市場情緒偏保守'
+  };
+  function getNote(title) {
+    const t = title.toLowerCase();
+    for (const [key, note] of Object.entries(zhNotes)) {
+      if (t.includes(key)) return note;
+    }
+    return '';
+  }
+  document.getElementById('newsCnt').textContent = data.length + ' 則';
+  document.getElementById('newsGrid').innerHTML = data.length ? data.map(n => {
+    const c = cats[n.cat] || '#37474f';
+    const note = getNote(n.title);
+    return '<div class="ni" style="border-left-color:'+c+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span class="nt-cat" style="background:'+c+';color:#fff;padding:2px 8px;border-radius:6px;font-size:10px">'+n.cat+'</span>'+
+        '<span class="nt-meta">'+n.pub+' · '+n.src+'</span>'+
+      '</div>'+
+      '<a class="nt-title" href="'+n.link+'" target="_blank">'+n.title+'</a>'+
+      (note ? '<div style="font-size:11px;color:#80cbc4;margin-top:4px;padding-left:2px">'+note+'</div>' : '')+
+    '</div>';
+  }).join('') : '<div style="color:#555;padding:20px;text-align:center">暫無新聞</div>';
+}
+function generateSummary() {
+  const el = document.getElementById('newsSummary');
+  if (!el) return;
+  const now = new Date().toLocaleString('zh-TW', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('summaryTime').textContent = '更新：' + now;
+  
+  const usUp   = US_DATA.filter(d=>d.pct>0).length;
+  const usDown = US_DATA.filter(d=>d.pct<0).length;
+  const twUp   = TW_DATA.filter(d=>d.pct>0).length;
+  const twDown = TW_DATA.filter(d=>d.pct<0).length;
+  const rsiLow = US_DATA.filter(d=>d.rsi<30).map(d=>d.ticker).join('、') || '無';
+  const dedUp  = [...US_DATA,...TW_DATA].filter(d=>(d.ded_ma20||'').includes('續揚')&&(d.ded_ma20||'').includes('易漲'))
+                  .map(d=>d.name||d.ticker).slice(0,5).join('、') || '無';
+  const topUS  = [...US_DATA].sort((a,b)=>b.score-a.score).slice(0,3).map(d=>d.ticker+'('+d.score+'分)').join('、');
+  const topTW  = [...TW_DATA].sort((a,b)=>b.score-a.score).slice(0,3).map(d=>(d.name||d.ticker)+'('+d.score+'分)').join('、');
+  const headlines = NEWS_DATA.slice(0,4).map(n=>'· '+n.title.substring(0,35)+'...').join('<br>');
+  
+  el.innerHTML = 
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">'+
+      '<div>'+
+        '<div style="color:#64b5f6;font-weight:600;margin-bottom:8px;">🇺🇸 美股盤勢</div>'+
+        '<div>今日 <span style="color:#4caf50">↑'+usUp+'檔</span> <span style="color:#f44336">↓'+usDown+'檔</span>，市場整體偏弱。</div>'+
+        '<div style="margin-top:6px;">RSI超賣(&lt;30)：<span style="color:#4caf50">'+rsiLow+'</span></div>'+
+        '<div style="margin-top:6px;">高評分：<span style="color:#ffc107">'+topUS+'</span></div>'+
+      '</div>'+
+      '<div>'+
+        '<div style="color:#64b5f6;font-weight:600;margin-bottom:8px;">🇹🇼 台股盤勢</div>'+
+        '<div>AI供應鏈 <span style="color:#4caf50">↑'+twUp+'檔</span> <span style="color:#f44336">↓'+twDown+'檔</span>。</div>'+
+        '<div style="margin-top:6px;">高評分：<span style="color:#ffc107">'+topTW+'</span></div>'+
+        '<div style="margin-top:6px;">扣抵易漲：<span style="color:#4caf50">'+dedUp+'</span></div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="margin-top:12px;padding-top:12px;border-top:1px solid #2a3a5c;">'+
+      '<div style="color:#64b5f6;font-weight:600;margin-bottom:6px;">📰 新聞重點（'+NEWS_DATA.length+'則）</div>'+
+      '<div style="font-size:12px;line-height:1.8;color:#aaa">'+headlines+'</div>'+
+    '</div>';
+}
+
+
+function filterNews(type, btn) {
+  document.querySelectorAll('#panel-news .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const map = {'semi':'🔬 半導體/AI','macro':'📈 大盤/總經','tw':'🇹🇼 台股/TSM'};
+  const data = type==='all' ? NEWS_DATA : NEWS_DATA.filter(n=>n.cat===map[type]);
+  renderNews(data);
+}
+
+// ── 圖表 ──
+
+// ── 族群資料 ──
+const US_GROUPS_DATA = {
+  'AI晶片核心':['NVDA','AMD','ARM','AVGO'],
+  '記憶體':['MU'],
+  '半導體設備':['AMAT','KLAC','ONTO','AEHR'],
+  '晶圓代工':['TSM'],
+  '光通訊/CPO':['LITE','NOK'],
+  '科技巨頭':['GOOGL','AMZN','AAPL','MSFT','META'],
+  'AI伺服器':['SMCI','MRVL','QCOM']
+};
+const TW_GROUPS_DATA = {
+  '晶圓代工':['2330','2303'],
+  'AI伺服器':['2317','2382','3231'],
+  '先進封裝':['3711','2449'],
+  'IC設計':['2454','3034','3661','5388'],
+  'CoWoS設備':['3583'],
+  'PCB/載板':['3037','3715','8046'],
+  '散熱':['3017'],
+  '電源':['2308'],
+  '光通訊':['6531','4977'],
+  '記憶體':['2408'],
+  '半導體材料':['3010','5434','1785'],
+  '半導體測試':['6223','6261','6510','2360','3030'],
+  '半導體設備':['3413','6438','6770'],
+  '低軌衛星':['3045','6415'],
+  '材料通路':['3305']
+};
+
+function renderHeatmap(containerId, stockData, groupsDef) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let html = '';
+  Object.entries(groupsDef).forEach(([grp, codes]) => {
+    const items = codes.map(code => {
+      return stockData.find(d => {
+        const dc = d.code || d.ticker.replace('.TW','');
+        return dc === code || d.ticker === code;
+      });
+    }).filter(Boolean);
+    if (items.length === 0) return;
+    html += '<div class="hm-row"><div class="hm-lbl" title="'+grp+'">'+grp.substring(0,5)+'</div>';
+    items.forEach(d => {
+      const pct = d.pct || 0;
+      const intensity = Math.min(Math.abs(pct) / 5, 1);
+      const r = pct < 0 ? Math.round(220 * intensity) : 20;
+      const g = pct >= 0 ? Math.round(160 * intensity) : 20;
+      const bg = pct === 0 ? '#2a3a5c' : 'rgb('+r+','+g+',20)';
+      const txtColor = intensity > 0.4 ? '#fff' : '#ccc';
+      const code = d.code || d.ticker.replace('.TW','');
+      const pcts = (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+      html += '<div class="hm-cell" style="background:'+bg+';color:'+txtColor+'" title="'+code+' '+d.name+'\nRSI:'+d.rsi+' 評分:'+d.score+'/10">'+
+        '<div class="hm-code">'+code+'</div>'+
+        '<div style="font-size:7px;opacity:0.8;line-height:1.1">'+((d.name||'').substring(0,4))+'</div>'+
+        '<div class="hm-pct">'+pcts+'</div></div>';
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html || '<div style="color:#555;padding:12px">無資料</div>';
+}
+
+function initCharts() {
+  // 美股漲跌幅
+  
+  // RSI分佈
+  const rb=[0,0,0,0,0];
+  ALL_DATA.forEach(d=>{ if(d.rsi<30)rb[0]++; else if(d.rsi<45)rb[1]++; else if(d.rsi<55)rb[2]++; else if(d.rsi<70)rb[3]++; else rb[4]++; });
+  
+  // P/C比
+  new Chart(document.getElementById('pcChart'),{
+    type:'bar',
+    data:{labels:OPT_DATA.map(d=>d.ticker),
+      datasets:[{data:OPT_DATA.map(d=>d.pc),
+        backgroundColor:OPT_DATA.map(d=>d.pc>1.2?'rgba(244,67,54,0.7)':d.pc<0.8?'rgba(76,175,80,0.7)':'rgba(255,193,7,0.7)'),borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:9}},grid:{color:'#1e2535'}},
+               y:{ticks:{color:'#888'},grid:{color:'#1e2535'}}}}
+  });
+  // OI比較
+  new Chart(document.getElementById('oiChart'),{
+    type:'bar',
+    data:{labels:OPT_DATA.map(d=>d.ticker),
+      datasets:[
+        {label:'Call',data:OPT_DATA.map(d=>d.call),backgroundColor:'rgba(76,175,80,0.6)',borderRadius:3},
+        {label:'Put', data:OPT_DATA.map(d=>d.put), backgroundColor:'rgba(244,67,54,0.6)',borderRadius:3}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#888',font:{size:10}}}},
+      scales:{x:{ticks:{color:'#888',font:{size:9}},grid:{color:'#1e2535'}},
+               y:{ticks:{color:'#888'},grid:{color:'#1e2535'}}}}
+  });
+  // 策略符合
+  const sc = [
+    ALL_DATA.filter(d=>(d.liv_sig||'').includes('🟢')).length,
+    ALL_DATA.filter(d=>(d.sma_sig||'').includes('黃金')).length,
+    ALL_DATA.filter(d=>(d.rsi_sig||'').includes('超賣')).length,
+    ALL_DATA.filter(d=>(d.brk_sig||'').includes('突破買進')).length,
+    ALL_DATA.filter(d=>(d.trd_sig||'').includes('突破下降')).length,
+    ALL_DATA.filter(d=>(d.dgc_sig||'').includes('GC')).length,
+  ];
+  new Chart(document.getElementById('stratChart'),{
+    type:'bar',
+    data:{labels:['李佛摩','SMA黃金','RSI超賣','Breakout','趨勢線突破','雙線GC'],
+      datasets:[{data:sc,backgroundColor:['#1565c0','#0288d1','#4caf50','#ff9800','#9c27b0','#00bcd4'],borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:9}},grid:{color:'#1e2535'}},
+               y:{ticks:{color:'#888',stepSize:1},grid:{color:'#1e2535'},min:0}}}
+  });
+  // 評分分佈
+  const sb=[0,0,0,0];
+  ALL_DATA.forEach(d=>{ if(d.score<=0)sb[0]++; else if(d.score<=2)sb[1]++; else if(d.score<=5)sb[2]++; else sb[3]++; });
+  new Chart(document.getElementById('scoreChart'),{
+    type:'pie',
+    data:{labels:['0分','1-2分','3-5分','6分以上'],
+      datasets:[{data:sb,backgroundColor:['#37474f','#1565c0','#4caf50','#ffc107'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'right',labels:{color:'#888',font:{size:11},boxWidth:12}}}
+  }});
+
+  // 美股族群對比圖
+  const usGrpNames = Object.keys(US_GROUPS_DATA);
+  const usGrpPcts = usGrpNames.map(g => {
+    const items = US_GROUPS_DATA[g].map(code => US_DATA.find(d => d.ticker===code)).filter(Boolean);
+    return items.length > 0 ? +(items.reduce((s,d)=>s+d.pct,0)/items.length).toFixed(2) : 0;
+  });
+  new Chart(document.getElementById('usGrpBar'), {
+    type: 'bar',
+    data: {labels: usGrpNames,
+      datasets: [{data: usGrpPcts, backgroundColor: usGrpPcts.map(p=>p>=0?'rgba(76,175,80,0.75)':'rgba(244,67,54,0.75)'), borderRadius: 4}]},
+    options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:8},maxRotation:45},grid:{color:'#1e2535'}},
+              y:{ticks:{color:'#888',callback:v=>v.toFixed(1)+'%'},grid:{color:'#1e2535'}}}}
+  });
+
+  // 台股族群對比圖
+  const twGrpNames = Object.keys(TW_GROUPS_DATA);
+  const twGrpPcts = twGrpNames.map(g => {
+    const codes = TW_GROUPS_DATA[g];
+    const items = TW_DATA.filter(d => codes.includes(d.code||d.ticker.replace('.TW','')));
+    return items.length > 0 ? +(items.reduce((s,d)=>s+d.pct,0)/items.length).toFixed(2) : 0;
+  });
+  new Chart(document.getElementById('twGrpBar'), {
+    type: 'bar',
+    data: {labels: twGrpNames,
+      datasets: [{data: twGrpPcts, backgroundColor: twGrpPcts.map(p=>p>=0?'rgba(76,175,80,0.75)':'rgba(244,67,54,0.75)'), borderRadius: 4}]},
+    options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{ticks:{color:'#888',font:{size:8},maxRotation:45},grid:{color:'#1e2535'}},
+              y:{ticks:{color:'#888',callback:v=>v.toFixed(1)+'%'},grid:{color:'#1e2535'}}}}
+  });
+
+  // 熱力圖
+  renderHeatmap('usHeatmap', US_DATA, US_GROUPS_DATA);
+  renderHeatmap('twHeatmap', TW_DATA, TW_GROUPS_DATA);
+}
+
+window.onload = () => {
+  renderCards('usGrid', US_DATA, 'usCnt');
+  renderCards('twGrid', TW_DATA, 'twCnt');
+  renderInst();
+  renderOpt();
+  renderFutures(TX_DATA,'txBars');
+  renderFutures(MTX_DATA,'mtxBars');
+  const sortedAll = [...ALL_DATA].sort((a,b)=>b.score-a.score);
+  renderStrat(sortedAll);
+  renderNews(NEWS_DATA);
+  generateSummary();
+  initCharts();
+};
+</script>
+</body>
+</html>
